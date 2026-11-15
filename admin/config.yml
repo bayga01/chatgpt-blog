@@ -10,7 +10,8 @@ backend:
   repo: bayga01/chatgpt-blog
   branch: main
   # 认证走本站自带的 Cloudflare Pages Function（functions/api/），无需额外服务
-  base_url: /
+  # 注意：base_url 必须是完整域名，不能写 / —— 否则 Decap CMS 会回退到 api.netlify.com 导致登录失败
+  base_url: https://dianlijuhe.com
   auth_endpoint: api/auth
 
 # 站点标题（后台左上角显示）
