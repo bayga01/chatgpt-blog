@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章管理后台 · ChatGPT 洞察</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <!-- Decap CMS 会自动在此挂载可视化后台界面 -->
+  <script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
+  <script>
+    // 自定义预览样式：后台右侧实时预览尽量贴近前台
+    if (typeof CMS !== "undefined" && CMS.registerPreviewStyle) {
+      CMS.registerPreviewStyle("../css/style.css");
+    }
+    // 注册文章预览模板（hbs），让右侧预览接近真实文章页
+    if (typeof CMS !== "undefined" && CMS.registerPreviewTemplate) {
+      var PostPreview = CMS.createClass({
+        render: function () {
+          var p = this.props.entry.toJS().data;
+          var body = p.content || "";
+          // 后台预览里 content 是 markdown 字符串，简单转换标题/段落
+          var html = body
+            .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+            .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+            .replace(/^> (.*)$/gm, "<blockquote>$1</blockquote>")
+            .split(/\n{2,}/).map(function (b) {
+              return /^<(h2|h3|blockquote)/.test(b.trim()) ? b : "<p>" + b.replace(/\n/g, "<br>") + "</p>";
+            }).join("");
+          return h("div", { className: "article", style: "padding:24px" },
+            h("h1", null, p.title || "文章标题"),
+            h("div", { style: "color:#888;margin-bottom:18px" }, (p.date || "") + " · " + (p.category || "") + " · " + (p.readTime || "")),
+            h("div", { innerHTML: html })
+          );
+        }
+      });
+      CMS.registerPreviewTemplate("posts", PostPreview);
+    }
+  </script>
+</body>
+</html>

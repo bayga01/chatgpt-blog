@@ -1,0 +1,56 @@
+# ============================================================
+# Decap CMS 配置（可视化发文后台）
+# 管理文件：data/posts.json
+# 你几乎不需要改这个文件——后台界面由它自动生成。
+# 唯一要改的是下面的 backend.repo（改成你自己的 GitHub 仓库）。
+# ============================================================
+backend:
+  name: github
+  # 改成你的 GitHub 用户名/仓库名，例如：zhangsan/my-chatgpt-blog
+  repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
+  branch: main
+  # 认证走本站自带的 Cloudflare Pages Function（functions/api/），无需额外服务
+  base_url: /
+  auth_endpoint: api/auth
+
+# 站点标题（后台左上角显示）
+site_url: https://你的域名.com/
+display_url: https://你的域名.com/
+logo_url: https://你的域名.com/images/logo.svg
+
+# 上传图片/附件保存的目录（会提交到仓库）
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+# ---------------- 内容集合 ----------------
+collections:
+  - name: "posts"
+    label: "📝 文章管理"
+    label_singular: "文章"
+    description: "在这里发布、编辑、删除文章。保存后网站会自动更新。"
+    files:
+      - label: "全部文章"
+        name: "posts"
+        file: "data/posts.json"
+        fields:
+          - label: "文章列表"
+            name: "posts"
+            widget: "list"
+            summary: "{{title}} — {{date}}"
+            fields:
+              - { label: "文章标题", name: "title", widget: "string", hint: "文章的标题" }
+              - { label: "网址标识 (slug)", name: "slug", widget: "string", hint: "英文小写+连字符，如 my-first-post。决定文章链接地址，发布后尽量不要改。" }
+              - label: "分类", name: "category", widget: "select", options:
+                  - { label: "提示词工程", value: "提示词工程" }
+                  - { label: "API 实战", value: "API 实战" }
+                  - { label: "使用技巧", value: "使用技巧" }
+                  - { label: "行业解读", value: "行业解读" }
+                  - { label: "安全合规", value: "安全合规" }
+              - { label: "发布日期", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "阅读时长", name: "readTime", widget: "string", default: "6 分钟", hint: "如 8 分钟" }
+              - { label: "作者", name: "author", widget: "string", default: "编辑部" }
+              - { label: "封面图标", name: "emoji", widget: "string", default: "📄", hint: "一个 emoji，如 🚀" }
+              - { label: "摘要", name: "excerpt", widget: "text", hint: "一两句话的简介，显示在卡片和分享卡片上" }
+              - { label: "搜索关键词", name: "keywords", widget: "string", hint: "用空格分隔的关键词，方便站内搜索" }
+              - { label: "设为首页精选", name: "featured", widget: "boolean", default: false, hint: "开启后这篇文章会显示在首页「本周精选」" }
+              - { label: "正文", name: "content", widget: "markdown", hint: "点工具栏按钮可插入链接、图片、标题。文中放外部链接：选中文字后点「链接」按钮粘贴网址即可。" }
