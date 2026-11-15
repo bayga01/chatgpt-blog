@@ -6,8 +6,8 @@
 # ============================================================
 backend:
   name: github
-  # 改成你的 GitHub 用户名/仓库名，例如：zhangsan/my-chatgpt-blog
-  repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
+  # GitHub 用户名/仓库名（已按你的账号填好）
+  repo: bayga01/chatgpt-blog
   branch: main
   # 认证走本站自带的 Cloudflare Pages Function（functions/api/），无需额外服务
   base_url: /
