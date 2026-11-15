@@ -40,7 +40,10 @@ collections:
             fields:
               - { label: "文章标题", name: "title", widget: "string", hint: "文章的标题" }
               - { label: "网址标识 (slug)", name: "slug", widget: "string", hint: "英文小写+连字符，如 my-first-post。决定文章链接地址，发布后尽量不要改。" }
-              - label: "分类", name: "category", widget: "select", options:
+              - label: "分类"
+                name: "category"
+                widget: "select"
+                options:
                   - { label: "提示词工程", value: "提示词工程" }
                   - { label: "API 实战", value: "API 实战" }
                   - { label: "使用技巧", value: "使用技巧" }
