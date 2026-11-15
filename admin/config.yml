@@ -14,9 +14,9 @@ backend:
   auth_endpoint: api/auth
 
 # 站点标题（后台左上角显示）
-site_url: https://你的域名.com/
-display_url: https://你的域名.com/
-logo_url: https://你的域名.com/images/logo.svg
+site_url: https://dianlijuhe.com/
+display_url: https://dianlijuhe.com/
+logo_url: https://dianlijuhe.com/images/logo.svg
 
 # 上传图片/附件保存的目录（会提交到仓库）
 media_folder: "images/uploads"
