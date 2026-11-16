@@ -11,6 +11,17 @@
      优先从 data/posts.json 读取（Decap CMS 后台管理的单一数据源），
      失败时回退到内联 posts-data.js，保证本地双击打开也能预览。
      ============================================================ */
+  // 让正文里的外部链接在新标签页打开，避免用户点出去就离开本站；
+  // 已有 target 的不重复处理，页内锚点（#xxx）保持原窗口跳转。
+  function externalizeLinks(html) {
+    if (!html) return html;
+    return html.replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>/gi, function (tag, href) {
+      if (/^\s*#/.test(href)) return tag;                       // 页内锚点，跳过
+      if (/\btarget\s*=/.test(tag)) return tag;                 // 已指定 target，跳过
+      return tag.replace(/\s*>$/, ' target="_blank" rel="noopener noreferrer">');
+    });
+  }
+
   function toMap(json) {
     var map = {};
     var list = json && json.posts ? json.posts : (Array.isArray(json) ? json : []);
@@ -20,11 +31,13 @@
       // 注意：marked v12 的 window.marked 是对象（方法在 .parse 上），不能再判断 typeof === "function"
       var md = window.marked;
       var mdParse = md && (typeof md.parse === "function" ? md.parse.bind(md) : (typeof md === "function" ? md : null));
+      var rendered;
       if (p.content != null && mdParse) {
-        try { p._html = mdParse(p.content); } catch (e) { p._html = p.content; }
+        try { rendered = mdParse(p.content); } catch (e) { rendered = p.content; }
       } else {
-        p._html = p.content || "";
+        rendered = p.content || "";
       }
+      p._html = externalizeLinks(rendered);
       map[p.slug] = p;
     });
     return map;
