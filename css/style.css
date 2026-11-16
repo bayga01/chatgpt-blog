@@ -266,13 +266,9 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
 .promo-hl {
   color: #e11d48;
   font-weight: 800;
-  padding: 0 3px;
-  border-radius: 4px;
-  background: rgba(225, 29, 72, .08);
 }
 [data-theme="dark"] .promo-hl {
   color: #ff6b8a;
-  background: rgba(255, 107, 138, .16);
 }
 
 /* 免费体验按钮：大气版 —— 流光扫过 + 紫青双色呼吸光晕 + 渐变流动 + 箭头脉动 */
