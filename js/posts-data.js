@@ -8,7 +8,7 @@ window.POSTS = {
   "prompt-template": {
     featured: true,
     title: "从零掌握 ChatGPT 提示词：一份能直接套用的结构化模板",
-    category: "提示词工程",
+    category: "chatGPT",
     date: "2026-11-10",
     readTime: "8 分钟",
     author: "编辑部",
@@ -52,7 +52,7 @@ window.POSTS = {
 
   "api-stream": {
     title: "用 Python 接入 ChatGPT API 并实现流式输出",
-    category: "API 实战",
+    category: "Claude",
     date: "2026-11-08",
     readTime: "12 分钟",
     author: "技术组",
@@ -98,7 +98,7 @@ for chunk in stream:
 
   "ai-trend-2026": {
     title: "2026 年生成式 AI 趋势：普通人真正该关心的 5 件事",
-    category: "行业解读",
+    category: "使用技巧",
     date: "2026-11-02",
     readTime: "10 分钟",
     author: "观察员",
@@ -132,7 +132,7 @@ for chunk in stream:
 
   "daily-workflow": {
     title: "把 ChatGPT 接进你的日常工作流：10 个提效场景",
-    category: "使用技巧",
+    category: "gemini",
     date: "2026-11-05",
     readTime: "6 分钟",
     author: "效率控",
@@ -157,7 +157,7 @@ for chunk in stream:
 
   "data-safety": {
     title: "企业用 ChatGPT 的 6 条数据安全红线",
-    category: "安全合规",
+    category: "常见问题",
     date: "2026-10-28",
     readTime: "7 分钟",
     author: "安全组",
@@ -181,7 +181,7 @@ for chunk in stream:
 
   "role-prompting": {
     title: "角色提示法：让回答质量提升一个档次的秘密",
-    category: "提示词工程",
+    category: "chatGPT",
     date: "2026-10-24",
     readTime: "5 分钟",
     author: "编辑部",
@@ -201,7 +201,7 @@ for chunk in stream:
 
   "function-calling": {
     title: "手把手实现 Function Calling：让 AI 调用你的接口",
-    category: "API 实战",
+    category: "Claude",
     date: "2026-10-20",
     readTime: "14 分钟",
     author: "技术组",
@@ -232,7 +232,7 @@ for chunk in stream:
 
   "summarize-pdf": {
     title: "用 ChatGPT 高效阅读和总结 PDF 文档的 7 个方法",
-    category: "使用技巧",
+    category: "gemini",
     date: "2026-10-16",
     readTime: "6 分钟",
     author: "效率控",
@@ -255,7 +255,7 @@ for chunk in stream:
 
   "open-vs-closed": {
     title: "开源还是闭源？主流大模型怎么选",
-    category: "行业解读",
+    category: "使用技巧",
     date: "2026-10-12",
     readTime: "9 分钟",
     author: "观察员",
