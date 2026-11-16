@@ -579,6 +579,101 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   padding: 22px; text-align: center; color: var(--color-text-muted);
 }
 
+/* ---------- 文章底部：免费体验引导（原分享栏位置） ---------- */
+.post-cta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 40px;
+  padding: 22px 26px;
+  background: var(--gradient-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.post-cta-copy { flex: 1; min-width: 0; }
+.post-cta-copy p {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.75;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.post-cta-hl { color: #e11d48; font-weight: 800; }
+[data-theme="dark"] .post-cta-hl { color: #ff6b8a; }
+
+/* 动态按钮：柔和呼吸光晕 + 渐变流动 + 箭头轻推，阅读时不打扰 */
+.post-cta-btn {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px 30px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  font-size: 1.04rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  background: linear-gradient(110deg, #6d5efc, #9b6dff, #00c2a8, #6d5efc);
+  background-size: 300% 100%;
+  box-shadow: 0 0 0 0 rgba(109, 94, 252, .35), 0 8px 22px rgba(109, 94, 252, .28);
+  animation: ctaGradient 8s linear infinite, ctaGlow 3.2s ease-in-out infinite;
+  transition: transform .25s ease, box-shadow .25s ease;
+  z-index: 0;
+}
+.post-cta-btn::before {
+  /* 顶部一束柔光扫过 */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.28) 50%, transparent 75%);
+  background-size: 220% 100%;
+  animation: ctaShine 4.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.post-cta-btn span, .post-cta-btn svg { position: relative; z-index: 2; }
+.post-cta-btn svg {
+  width: 19px; height: 19px;
+  animation: ctaNudge 1.8s ease-in-out infinite;
+}
+.post-cta-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 0 5px rgba(109, 94, 252, .16), 0 12px 30px rgba(109, 94, 252, .42);
+}
+.post-cta-btn:active { transform: translateY(0) scale(.98); }
+.post-cta-btn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+
+@keyframes ctaGradient {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(109,94,252,.32), 0 8px 22px rgba(109,94,252,.26); }
+  50% { box-shadow: 0 0 0 7px rgba(109,94,252,0), 0 10px 28px rgba(109,94,252,.4); }
+}
+@keyframes ctaShine {
+  0%, 60%, 100% { background-position: 180% 0; }
+  30% { background-position: -80% 0; }
+}
+@keyframes ctaNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-cta-btn, .post-cta-btn::before, .post-cta-btn svg { animation: none; }
+}
+@media (max-width: 640px) {
+  .post-cta { flex-direction: column; align-items: stretch; text-align: center; padding: 22px 20px; }
+  .post-cta-btn { width: 100%; }
+}
+
 /* 分享栏 */
 .share-bar {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
