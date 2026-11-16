@@ -415,6 +415,42 @@
     });
   }
 
+  /* ---------- 回到顶部：全站通用（首页 + 文章页） ---------- */
+  function setupToTop() {
+    // 已存在则不重复创建，避免脚本被引入两次时出现两个按钮
+    if (document.querySelector(".to-top")) return;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "to-top";
+    btn.setAttribute("aria-label", "回到顶部");
+    btn.title = "回到顶部";
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    document.body.appendChild(btn);
+
+    var ticking = false;
+    function sync() {
+      // 超过一屏高度才显示，首屏阅读区不受干扰
+      btn.classList.toggle("show", window.scrollY > window.innerHeight);
+      ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (ticking) return;               // rAF 节流：滚动时不做多余计算
+      ticking = true;
+      window.requestAnimationFrame(sync);
+    }, { passive: true });
+    window.addEventListener("resize", sync, { passive: true });
+
+    btn.addEventListener("click", function () {
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    });
+
+    sync(); // 刷新时若已在页面中部（浏览器恢复滚动位置），立即显示
+  }
+
   /* ---------- 启动：数据就绪后再渲染首页/详情页 ---------- */
   loadPosts(function () {
     // 文章总数改为真实数据（新增文章后自动更新，避免写死数字失真）
@@ -424,5 +460,6 @@
     }
     renderHome();   // 首页：精选 + 分页列表（非首页时内部元素为空，自动跳过）
     renderPost();   // 详情页：正文 + 目录 + 相关阅读
+    setupToTop();   // 回到顶部按钮：所有页面通用
   });
 })();
