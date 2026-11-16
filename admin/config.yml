@@ -45,11 +45,11 @@ collections:
                 name: "category"
                 widget: "select"
                 options:
-                  - { label: "提示词工程", value: "提示词工程" }
-                  - { label: "API 实战", value: "API 实战" }
+                  - { label: "chatGPT", value: "chatGPT" }
+                  - { label: "Claude", value: "Claude" }
+                  - { label: "gemini", value: "gemini" }
                   - { label: "使用技巧", value: "使用技巧" }
-                  - { label: "行业解读", value: "行业解读" }
-                  - { label: "安全合规", value: "安全合规" }
+                  - { label: "常见问题", value: "常见问题" }
               - { label: "发布日期", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "阅读时长", name: "readTime", widget: "string", default: "6 分钟", hint: "如 8 分钟" }
               - { label: "作者", name: "author", widget: "string", default: "编辑部" }
