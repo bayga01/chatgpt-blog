@@ -1,5 +1,5 @@
 /* ============================================================
-   ChatGPT 洞察 · 交互脚本
+   聚合平台-chatGPT · 交互脚本
    功能：深色模式 / 移动端菜单 / 滚动揭示动画 / 数字计数
         / 文章分类筛选 / 搜索过滤 / 文章详情渲染 / 目录生成
    ============================================================ */
@@ -17,8 +17,11 @@
     list.forEach(function (p) {
       if (!p || !p.slug) return;
       // 正文：新数据为 Markdown，用 marked 渲染；已是 HTML 的直接透传
-      if (p.content != null && typeof window.marked === "function") {
-        try { p._html = window.marked.parse(p.content); } catch (e) { p._html = p.content; }
+      // 注意：marked v12 的 window.marked 是对象（方法在 .parse 上），不能再判断 typeof === "function"
+      var md = window.marked;
+      var mdParse = md && (typeof md.parse === "function" ? md.parse.bind(md) : (typeof md === "function" ? md : null));
+      if (p.content != null && mdParse) {
+        try { p._html = mdParse(p.content); } catch (e) { p._html = p.content; }
       } else {
         p._html = p.content || "";
       }
@@ -288,9 +291,39 @@
       slug = null;
     }
 
-    document.title = post.title + " · ChatGPT 洞察";
+    var siteName = "聚合平台-chatGPT";
+    var pageUrl = "https://dianlijuhe.com/post.html?slug=" + (slug || "");
+    document.title = post.title + " · " + siteName;
+
+    // 动态更新 SEO 元信息（让不执行 JS 以外的爬虫/分享也能拿到正确信息）
+    var desc = post.excerpt || post.title;
     var metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", post.excerpt || post.title);
+    if (metaDesc) metaDesc.setAttribute("content", desc);
+    var ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", post.title + " · " + siteName);
+    var ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", desc);
+    var ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute("content", pageUrl);
+    var canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute("href", pageUrl);
+
+    // 注入文章结构化数据（Article + Breadcrumb），利于 SEO / GEO 抓取
+    var schemaEl = document.getElementById("articleSchema");
+    if (schemaEl) {
+      var schema = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "description": desc,
+        "datePublished": post.date || "",
+        "author": { "@type": "Person", "name": post.author || "编辑部" },
+        "publisher": { "@type": "Organization", "name": siteName },
+        "mainEntityOfPage": { "@type": "WebPage", "@id": pageUrl },
+        "inLanguage": "zh-CN"
+      };
+      schemaEl.textContent = JSON.stringify(schema);
+    }
 
     titleEl.textContent = post.title;
     document.getElementById("postAuthor").textContent = post.author;
@@ -314,9 +347,6 @@
 
     // 相关文章（同分类，排除自己，最多 3 篇）
     buildRelated(slug, post.category);
-
-    // 分享功能（复制链接 / 微博 / X）
-    setupShare(post);
 
     // 更新 URL canonical / og 友好（仅前端，不影响静态托管）
     if (slug) {
@@ -372,45 +402,14 @@
     });
   }
 
-  /* ---------- 文章分享 ---------- */
-  function setupShare(post) {
-    var shareUrl = window.location.href;
-    var shareTitle = post.title || document.title;
-
-    var copyBtn = document.getElementById("copyLink");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", function () {
-        var ok = function () {
-          copyBtn.textContent = "✅ 已复制";
-          setTimeout(function () { copyBtn.textContent = "复制链接"; }, 2000);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(shareUrl).then(ok, fallbackCopy);
-        } else {
-          fallbackCopy();
-        }
-        function fallbackCopy() {
-          var t = document.createElement("textarea");
-          t.value = shareUrl; t.style.position = "fixed"; t.style.opacity = "0";
-          document.body.appendChild(t); t.select();
-          try { document.execCommand("copy"); ok(); } catch (e) {}
-          document.body.removeChild(t);
-        }
-      });
-    }
-
-    var wb = document.getElementById("shareWeibo");
-    if (wb) wb.href = "https://service.weibo.com/share/share.php?url=" +
-      encodeURIComponent(shareUrl) + "&title=" + encodeURIComponent(shareTitle);
-
-    var tw = document.getElementById("shareTwitter");
-    if (tw) tw.href = "https://twitter.com/intent/tweet?url=" +
-      encodeURIComponent(shareUrl) + "&text=" + encodeURIComponent(shareTitle);
-  }
-
   /* ---------- 启动：数据就绪后再渲染首页/详情页 ---------- */
   loadPosts(function () {
+    // 文章总数改为真实数据（新增文章后自动更新，避免写死数字失真）
+    var statPosts = document.getElementById("statPosts");
+    if (statPosts && window.POSTS) {
+      statPosts.setAttribute("data-count", Object.keys(window.POSTS).length);
+    }
     renderHome();   // 首页：精选 + 分页列表（非首页时内部元素为空，自动跳过）
-    renderPost();   // 详情页：正文 + 目录 + 相关阅读 + 分享
+    renderPost();   // 详情页：正文 + 目录 + 相关阅读
   });
 })();
