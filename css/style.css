@@ -253,6 +253,36 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
 .typing i:nth-child(2){ animation-delay: .2s; } .typing i:nth-child(3){ animation-delay: .4s; }
 @keyframes blink { 0%,80%,100%{ opacity:.25; transform: translateY(0);} 40%{ opacity:1; transform: translateY(-3px);} }
 
+/* 推广卡片（首屏右侧） */
+.promo-card { max-width: 440px; }
+.promo-text {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--color-text-soft);
+  margin: 0 0 20px;
+}
+
+/* 免费体验按钮：呼吸光晕 + 箭头轻推，吸引点击 */
+.promo-btn {
+  width: 100%;
+  justify-content: center;
+  position: relative;
+  animation: promoPulse 2.2s ease-in-out infinite;
+}
+.promo-btn svg { transition: transform .2s ease; }
+.promo-btn:hover { animation: none; transform: translateY(-2px); }
+.promo-btn:hover svg { transform: translateX(4px); }
+
+@keyframes promoPulse {
+  0%, 100% { box-shadow: var(--shadow-md), 0 0 0 0 rgba(99, 102, 241, .45); }
+  50%      { box-shadow: var(--shadow-lg), 0 0 0 10px rgba(99, 102, 241, 0); }
+}
+
+/* 尊重系统「减少动态效果」设置 */
+@media (prefers-reduced-motion: reduce) {
+  .promo-btn { animation: none; }
+}
+
 /* ---------- 统计条 ---------- */
 .stats {
   display: grid;
