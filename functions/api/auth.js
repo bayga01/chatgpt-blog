@@ -16,11 +16,22 @@ export async function onRequest(context) {
         redirectUrl.searchParams.set('client_id', client_id);
         redirectUrl.searchParams.set('redirect_uri', url.origin + '/api/callback');
         redirectUrl.searchParams.set('scope', 'repo user');
-        redirectUrl.searchParams.set(
-            'state',
-            crypto.getRandomValues(new Uint8Array(12)).join(''),
-        );
-        return Response.redirect(redirectUrl.href, 301);
+
+        // 生成随机 state 防 CSRF：同时放进授权 URL 和 HttpOnly Cookie，供回调时比对
+        const stateBytes = crypto.getRandomValues(new Uint8Array(16));
+        const state = Array.from(stateBytes).map(function (b) {
+            return b.toString(16).padStart(2, '0');
+        }).join('');
+        redirectUrl.searchParams.set('state', state);
+
+        // Response.redirect 的响应头不可修改，手动构造 302 以携带 Set-Cookie
+        return new Response(null, {
+            status: 302,
+            headers: {
+                'Location': redirectUrl.href,
+                'Set-Cookie': 'oauth_state=' + state + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=600'
+            }
+        });
 
     } catch (error) {
         console.error(error);
