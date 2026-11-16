@@ -261,26 +261,74 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   color: var(--color-text-soft);
   margin: 0 0 20px;
 }
+/* 文案重点：整句加粗 + 关键词红色高亮标记 */
+.promo-text strong { font-weight: 800; color: var(--color-text); }
+.promo-hl {
+  color: #e11d48;
+  font-weight: 800;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: rgba(225, 29, 72, .08);
+}
+[data-theme="dark"] .promo-hl {
+  color: #ff6b8a;
+  background: rgba(255, 107, 138, .16);
+}
 
-/* 免费体验按钮：呼吸光晕 + 箭头轻推，吸引点击 */
+/* 免费体验按钮：大气版 —— 流光扫过 + 紫青双色呼吸光晕 + 渐变流动 + 箭头脉动 */
 .promo-btn {
   width: 100%;
   justify-content: center;
   position: relative;
-  animation: promoPulse 2.2s ease-in-out infinite;
+  overflow: hidden;
+  padding: 17px 28px;
+  font-size: 1.12rem;
+  letter-spacing: .5px;
+  background: linear-gradient(100deg, #6d5efc 0%, #8b5cf6 45%, #12b8c8 100%);
+  background-size: 200% auto;
+  box-shadow: 0 10px 30px rgba(109, 94, 252, .45);
+  animation: promoGlow 2.4s ease-in-out infinite, promoGradient 6s linear infinite;
 }
-.promo-btn svg { transition: transform .2s ease; }
-.promo-btn:hover { animation: none; transform: translateY(-2px); }
-.promo-btn:hover svg { transform: translateX(4px); }
+/* 流光：一道柔白光周期性从左扫到右 */
+.promo-btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 45%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent);
+  transform: skewX(-20deg);
+  animation: promoShine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.promo-btn svg { position: relative; z-index: 1; animation: promoArrow 1.6s ease-in-out infinite; }
+.promo-btn:hover {
+  animation: none;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 18px 44px rgba(109, 94, 252, .6);
+}
+.promo-btn:hover svg { animation: none; transform: translateX(5px); }
 
-@keyframes promoPulse {
-  0%, 100% { box-shadow: var(--shadow-md), 0 0 0 0 rgba(99, 102, 241, .45); }
-  50%      { box-shadow: var(--shadow-lg), 0 0 0 10px rgba(99, 102, 241, 0); }
+@keyframes promoGlow {
+  0%, 100% { box-shadow: 0 10px 30px rgba(109, 94, 252, .45), 0 0 0 0 rgba(109, 94, 252, .5); }
+  50%      { box-shadow: 0 10px 30px rgba(18, 184, 200, .5), 0 0 0 12px rgba(109, 94, 252, 0); }
+}
+@keyframes promoShine {
+  0%, 55%   { left: -75%; }
+  85%, 100% { left: 130%; }
+}
+@keyframes promoArrow {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
+}
+@keyframes promoGradient {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 /* 尊重系统「减少动态效果」设置 */
 @media (prefers-reduced-motion: reduce) {
-  .promo-btn { animation: none; }
+  .promo-btn, .promo-btn svg { animation: none; }
+  .promo-btn::after { display: none; }
 }
 
 /* ---------- 统计条 ---------- */
