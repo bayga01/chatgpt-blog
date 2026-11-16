@@ -1,4 +1,4 @@
-function renderBody(status, content) {
+function renderBody(status, content, origin) {
     const html = `
     <script>
       const receiveMessage = (message) => {
@@ -9,7 +9,7 @@ function renderBody(status, content) {
         window.removeEventListener("message", receiveMessage, false);
       }
       window.addEventListener("message", receiveMessage, false);
-      window.opener.postMessage("authorizing:github", "*");
+      window.opener.postMessage("authorizing:github", ${JSON.stringify(origin)});
     </script>
     `;
     const blob = new Blob([html]);
@@ -32,6 +32,18 @@ export async function onRequest(context) {
     try {
         const url = new URL(request.url);
         const code = url.searchParams.get('code');
+        const state = url.searchParams.get('state');
+
+        // CSRF 防护：比对授权时种下的 HttpOnly Cookie 与回传的 state，不一致直接拒绝
+        const cookieHeader = request.headers.get('Cookie') || '';
+        const cookieState = (cookieHeader.match(/(?:^|;\s*)oauth_state=([a-f0-9]+)/) || [])[1];
+        if (!state || !cookieState || state !== cookieState) {
+            return new Response('Invalid OAuth state', {
+                headers: { 'content-type': 'text/plain;charset=UTF-8' },
+                status: 403,
+            });
+        }
+
         const response = await fetch(
             'https://github.com/login/oauth/access_token',
             {
@@ -46,9 +58,11 @@ export async function onRequest(context) {
         );
         const result = await response.json();
         if (result.error) {
-            return new Response(renderBody('error', result), {
+            return new Response(renderBody('error', result, url.origin), {
                 headers: {
                     'content-type': 'text/html;charset=UTF-8',
+                    // 一次性 state 用完即清
+                    'Set-Cookie': 'oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0'
                 },
                 status: 401 
             });
@@ -58,10 +72,12 @@ export async function onRequest(context) {
         const responseBody = renderBody('success', {
             token,
             provider,
-        });
+        }, url.origin);
         return new Response(responseBody, { 
             headers: {
                 'content-type': 'text/html;charset=UTF-8',
+                // 一次性 state 用完即清
+                'Set-Cookie': 'oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0'
             },
             status: 200 
         });
