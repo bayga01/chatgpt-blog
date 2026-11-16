@@ -638,6 +638,38 @@ body.menu-open .mobile-menu { transform: translateX(0); }
 }
 .mobile-menu a:hover { color: var(--color-primary); }
 
+/* ---------- 回到顶部（右下角浮动按钮） ---------- */
+/* 默认隐藏且不接收点击，滚动超过一屏后由 JS 加 .show 才淡入，避免遮挡阅读 */
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity .25s ease, transform .25s ease, visibility .25s, box-shadow .25s ease, background .25s ease;
+  z-index: 80;
+  -webkit-tap-highlight-color: transparent;
+}
+.to-top.show { opacity: 1; visibility: visible; transform: none; }
+.to-top:hover { background: var(--color-primary); color: #fff; border-color: transparent; box-shadow: var(--shadow-lg); }
+.to-top:active { transform: scale(.94); }
+.to-top:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.to-top svg { width: 22px; height: 22px; display: block; }
+[data-theme="dark"] .to-top { background: var(--color-surface-2, #1b1e2b); }
+
 /* ---------- 动画 ---------- */
 .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
 .reveal.in { opacity: 1; transform: none; }
@@ -663,6 +695,9 @@ body.menu-open .mobile-menu { transform: translateX(0); }
   .footer-grid { grid-template-columns: 1fr; }
   .hero { padding: 48px 0 32px; }
   .stats { margin-bottom: 36px; }
+  /* 手机上按钮略小、更贴边，减少对正文的遮挡 */
+  .to-top { width: 42px; height: 42px; right: 14px; bottom: 16px; }
+  .to-top svg { width: 20px; height: 20px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
