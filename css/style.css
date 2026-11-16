@@ -604,9 +604,10 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
 .post-cta-hl { color: #e11d48; font-weight: 800; }
 [data-theme="dark"] .post-cta-hl { color: #ff6b8a; }
 
-/* 动态按钮：柔和呼吸光晕 + 渐变流动 + 箭头轻推，阅读时不打扰 */
+/* 动态按钮：柔和呼吸光晕 + 渐变流动 + 箭头轻推，阅读时不打扰
+   注意：不使用任何覆盖伪元素，文字与箭头处于正常文档流，
+   避免个别手机/内置浏览器把文字盖住而只剩箭头 */
 .post-cta-btn {
-  position: relative;
   flex: none;
   display: inline-flex;
   align-items: center;
@@ -624,23 +625,18 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   box-shadow: 0 0 0 0 rgba(109, 94, 252, .35), 0 8px 22px rgba(109, 94, 252, .28);
   animation: ctaGradient 8s linear infinite, ctaGlow 3.2s ease-in-out infinite;
   transition: transform .25s ease, box-shadow .25s ease;
-  z-index: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
-.post-cta-btn::before {
-  /* 顶部一束柔光扫过 */
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.28) 50%, transparent 75%);
-  background-size: 220% 100%;
-  animation: ctaShine 4.5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
+.post-cta-btn span {
+  display: inline-block;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .18); /* 增强白字对比，任何背景下都清晰 */
 }
-.post-cta-btn span, .post-cta-btn svg { position: relative; z-index: 2; }
 .post-cta-btn svg {
+  display: block;
   width: 19px; height: 19px;
+  flex: none;
   animation: ctaNudge 1.8s ease-in-out infinite;
 }
 .post-cta-btn:hover {
@@ -658,16 +654,12 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   0%, 100% { box-shadow: 0 0 0 0 rgba(109,94,252,.32), 0 8px 22px rgba(109,94,252,.26); }
   50% { box-shadow: 0 0 0 7px rgba(109,94,252,0), 0 10px 28px rgba(109,94,252,.4); }
 }
-@keyframes ctaShine {
-  0%, 60%, 100% { background-position: 180% 0; }
-  30% { background-position: -80% 0; }
-}
 @keyframes ctaNudge {
   0%, 100% { transform: translateX(0); }
   50% { transform: translateX(4px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .post-cta-btn, .post-cta-btn::before, .post-cta-btn svg { animation: none; }
+  .post-cta-btn, .post-cta-btn svg { animation: none; }
 }
 @media (max-width: 640px) {
   .post-cta { flex-direction: column; align-items: stretch; text-align: center; padding: 22px 20px; }
