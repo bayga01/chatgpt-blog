@@ -10,6 +10,49 @@
   <!-- Decap CMS 会自动在此挂载可视化后台界面 -->
   <script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
   <script>
+    // 注册「彩色文字」工具：正文编辑器的工具栏里点「插入组件」即可给文字上色，
+    // 不懂代码也能用——填文字、选颜色即可，保存后网站前台会显示对应颜色。
+    if (typeof CMS !== "undefined" && CMS.registerEditorComponent) {
+      CMS.registerEditorComponent({
+        id: "color-text",
+        label: "🎨 彩色文字",
+        icon: "paint-brush",
+        fields: [
+          { name: "text", label: "要变色的文字", widget: "string", hint: "只输入需要改变颜色的那几个字" },
+          { name: "color", label: "文字颜色", widget: "color", default: "#e11d48", allowInput: true },
+          { name: "bold", label: "同时加粗", widget: "boolean", default: false }
+        ],
+        // 宽松匹配，方便 remark 重新序列化后依然能识别已插入的彩色文字
+        pattern: /<span class="cms-color"[^>]*>([\s\S]*?)<\/span>/g,
+        fromBlock: function (match) {
+          var raw = match[0] || "";
+          var colorMatch = /color:\s*(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)/.exec(raw);
+          return {
+            text: String(match[1] || "")
+              .replace(/<br>/g, "\n")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">"),
+            color: colorMatch ? colorMatch[1] : "#e11d48",
+            bold: /font-weight:\s*(700|800|bold)/i.test(raw)
+          };
+        },
+        toBlock: function (data) {
+          var color = String(data.color || "#e11d48").replace(/["<>]/g, "");
+          var weight = data.bold ? "font-weight:800;" : "";
+          var text = String(data.text || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\n/g, "<br>");
+          return '<span class="cms-color" style="color:' + color + ';' + weight + '">' + text + '</span>';
+        },
+        toPreview: function (data) {
+          var color = String(data.color || "#e11d48").replace(/["<>]/g, "");
+          var weight = data.bold ? "font-weight:800;" : "";
+          return '<span style="color:' + color + ';' + weight + '">' + (data.text || "") + '</span>';
+        }
+      });
+    }
     // 自定义预览样式：后台右侧实时预览尽量贴近前台
     if (typeof CMS !== "undefined" && CMS.registerPreviewStyle) {
       CMS.registerPreviewStyle("../css/style.css");
