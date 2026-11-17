@@ -65,17 +65,16 @@
     </div>
   </section>
 
-  <div class="container">
-    <div class="post-cover" id="postCover"><span class="emoji" id="postCoverEmoji">🤖</span></div>
-  </div>
-
-  <!-- ===== 正文 + 目录 ===== -->
+  <!-- ===== 首图 + 正文 + 目录（同一两列布局，目录顶部与首图顶部齐平） ===== -->
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="post-layout">
-        <article class="article" id="postContent">
-          <!-- 正文由 JS 注入 -->
-        </article>
+        <div class="post-main">
+          <div class="post-cover" id="postCover"><span class="emoji" id="postCoverEmoji">🤖</span></div>
+          <article class="article" id="postContent">
+            <!-- 正文由 JS 注入 -->
+          </article>
+        </div>
         <aside class="toc" id="toc" aria-label="文章目录">
           <h4>目录</h4>
           <nav id="tocList"></nav>
