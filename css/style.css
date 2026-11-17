@@ -572,14 +572,15 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   object-fit: cover;
   display: block;
 }
-/* 有封面图时：与正文列等宽、左对齐，按原图比例完整显示（不裁切），避免撑满首屏过大 */
+/* 有封面图时：位于正文左列内，宽度自然等于正文列宽，按原图比例完整显示（不裁切） */
 .post-cover.has-image {
   height: auto;
   display: block;
 }
+/* 仅桌面端：首图顶部与目录顶部齐平，去掉首图上外边距；
+   移动端（≤980px）保持原有的 10px 上边距不变 */
 @media (min-width: 981px) {
-  /* 桌面：正文列宽 = 容器宽 - 侧栏280 - 间距48，封面与之对齐 */
-  .post-cover.has-image { max-width: calc(100% - 328px); margin-left: 0; margin-right: auto; }
+  .post-cover { margin-top: 0; }
 }
 .post-cover.has-image .cover-img {
   position: static;
