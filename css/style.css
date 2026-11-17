@@ -399,8 +399,22 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   color: #fff;
 }
 .card .thumb .emoji { font-size: 3rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25)); }
-/* 列表卡片封面图片：完整显示不裁切（等比缩放居中，两侧留渐变底色），分类标签浮在其上 */
-.card .thumb .cover-img {
+/* 列表卡片封面图片：直接显示上传的图片整体，不露默认渐变底色、不裁切 */
+/* 有封面图：容器高度由图片撑起，图片铺满宽度原比例显示 */
+.card .thumb.has-cover {
+  height: auto;
+  display: block;
+  background: var(--color-surface);
+}
+.card .thumb.has-cover .cover-img {
+  position: static;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+/* 无封面图（emoji 回退）：保持原有渐变背景与固定高度 */
+.card .thumb:not(.has-cover) .cover-img {
   position: absolute;
   inset: 0;
   width: 100%;
