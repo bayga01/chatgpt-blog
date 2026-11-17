@@ -389,6 +389,10 @@
     // 生成目录（基于 h2/h3）
     buildTOC(contentEl);
 
+    // 移动端：把目录搬到首图上方，方便点小标题直接跳转；
+    // 电脑端目录保持在正文右侧，完全不变。
+    placeTOCForMobile();
+
     // 相关文章（同分类，排除自己，最多 3 篇）
     buildRelated(slug, post.category);
 
@@ -396,6 +400,36 @@
     if (slug) {
       history.replaceState(null, "", "post.html?slug=" + slug);
     }
+  }
+
+  // 移动端目录位置：≤980px 时移到首图上方（电脑端保持原位）
+  // 用 matchMedia 监听，横竖屏/窗口缩放切换时自动归位
+  function placeTOCForMobile() {
+    var tocBox = document.getElementById("toc");
+    var coverEl = document.getElementById("postCover");
+    var layout = document.querySelector(".post-layout");
+    if (!tocBox || !coverEl || !layout) return;
+
+    var mq = window.matchMedia("(max-width: 980px)");
+    function apply() {
+      if (mq.matches) {
+        // 移动端：插到首图容器里、首图之前
+        var host = coverEl.parentElement;
+        if (host && tocBox.parentElement !== host) {
+          host.insertBefore(tocBox, coverEl);
+        }
+        tocBox.classList.add("toc-mobile");
+      } else {
+        // 电脑端：还原到正文右侧（article 之后）
+        if (tocBox.parentElement !== layout) {
+          layout.appendChild(tocBox);
+        }
+        tocBox.classList.remove("toc-mobile");
+      }
+    }
+    apply();
+    if (mq.addEventListener) mq.addEventListener("change", apply);
+    else if (mq.addListener) mq.addListener(apply);
   }
 
   function buildTOC(contentEl) {
