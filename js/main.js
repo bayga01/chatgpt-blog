@@ -136,14 +136,23 @@
     }
     requestAnimationFrame(step);
   }
-  var counters = document.querySelectorAll("[data-count]");
-  if ("IntersectionObserver" in window && counters.length) {
-    var cio = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { animateCount(en.target); cio.unobserve(en.target); }
-      });
-    }, { threshold: 0.5 });
-    counters.forEach(function (el) { cio.observe(el); });
+  // 计数动画的绑定推迟到数据就绪后（见 loadPosts 回调里的 setupCounters），
+  // 确保 animateCount 读到的 data-count 是真实文章数，而非 HTML 里写死的初始值。
+  var countersReady = false;
+  function setupCounters() {
+    if (countersReady) return;
+    countersReady = true;
+    var counters = document.querySelectorAll("[data-count]");
+    if ("IntersectionObserver" in window && counters.length) {
+      var cio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { animateCount(en.target); cio.unobserve(en.target); }
+        });
+      }, { threshold: 0.5 });
+      counters.forEach(function (el) { cio.observe(el); });
+    } else {
+      counters.forEach(function (el) { animateCount(el); });
+    }
   }
 
   /* ---------- 文章筛选 + 搜索（首页） ---------- */
@@ -525,8 +534,12 @@
     // 文章总数改为真实数据（新增文章后自动更新，避免写死数字失真）
     var statPosts = document.getElementById("statPosts");
     if (statPosts && window.POSTS) {
-      statPosts.setAttribute("data-count", Object.keys(window.POSTS).length);
+      var total = Object.keys(window.POSTS).length;
+      // 仅在成功读到文章时覆盖；数据为空时保留 HTML 初始值，避免显示 0+
+      if (total > 0) statPosts.setAttribute("data-count", total);
     }
+    // 数据就绪后再绑定计数动画，确保读到上面的真实文章数
+    setupCounters();
     renderHome();   // 首页：精选 + 分页列表（非首页时内部元素为空，自动跳过）
     renderPost();   // 详情页：正文 + 目录 + 相关阅读
     setupToTop();   // 回到顶部按钮：所有页面通用
