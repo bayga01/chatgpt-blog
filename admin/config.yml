@@ -50,7 +50,9 @@ collections:
                   - { label: "gemini", value: "gemini" }
                   - { label: "使用技巧", value: "使用技巧" }
                   - { label: "常见问题", value: "常见问题" }
-              - { label: "发布日期", name: "date", widget: "date", format: "YYYY-MM-DD", required: false }
+              # 注意：Decap CMS 3.0 起已移除 date 控件，必须用 datetime 控件；
+              # time_format:false 隐藏时间部分，只保留日期；存储格式仍是 YYYY-MM-DD
+              - { label: "发布日期", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
               - { label: "阅读时长", name: "readTime", widget: "string", default: "6 分钟", hint: "如 8 分钟", required: false }
               - { label: "作者", name: "author", widget: "string", default: "编辑部", required: false }
               - { label: "封面图标", name: "emoji", widget: "string", default: "📄", hint: "一个 emoji，如 🚀", required: false }
