@@ -58,4 +58,8 @@ collections:
               - { label: "摘要", name: "excerpt", widget: "text", hint: "一两句话的简介，显示在卡片和分享卡片上" }
               - { label: "搜索关键词", name: "keywords", widget: "string", hint: "用空格分隔的关键词，方便站内搜索" }
               - { label: "设为首页精选", name: "featured", widget: "boolean", default: false, hint: "开启后这篇文章会显示在首页「本周精选」" }
-              - { label: "正文", name: "content", widget: "markdown", hint: "点工具栏按钮可插入链接、图片、标题。文中放外部链接：选中文字后点「链接」按钮粘贴网址即可。" }
+              - label: "正文"
+                name: "content"
+                widget: "markdown"
+                editor_components: ["color-text", "image", "code-block"]
+                hint: "工具栏可插入标题、链接、图片、列表。想改文字颜色：点工具栏的「插入组件」→ 选「🎨 彩色文字」→ 填文字、选颜色即可，不用写代码。外部链接：选中文字后点「链接」粘贴网址。"
