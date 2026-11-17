@@ -167,11 +167,11 @@
     return keys.slice(0, 6);
   }
 
-  // 当前筛选/搜索后的文章列表（已排除所有精选文章，按日期倒序）
+  // 当前筛选/搜索后的文章列表（包含全部文章，按日期倒序）
+  // 设为精选的文章会同时在顶部精选区和此列表展示，避免发布后"找不到文章"
   function getFiltered() {
     if (!window.POSTS) return [];
-    var fks = getFeaturedKeys();
-    var list = Object.keys(window.POSTS).filter(function (k) { return fks.indexOf(k) === -1; });
+    var list = Object.keys(window.POSTS);
     list = list.filter(function (k) {
       var p = window.POSTS[k];
       var okCat = state.filter === "all" || p.category === state.filter;
