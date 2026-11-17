@@ -191,7 +191,7 @@
       ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
       : '<span class="emoji">' + p.emoji + '</span>';
     return '<article class="card reveal in" data-category="' + p.category + '" data-keywords="' + ((p.keywords || "") + " " + p.title) + '">' +
-        '<div class="thumb"><span class="cat-tag">' + p.category + '</span>' + thumbInner + '</div>' +
+        '<div class="thumb' + (p.cover ? ' has-cover' : '') + '"><span class="cat-tag">' + p.category + '</span>' + thumbInner + '</div>' +
         '<div class="body">' +
           '<div class="meta"><span>📅 ' + p.date + '</span><span>⏱ ' + p.readTime + '</span></div>' +
           '<h3><a href="post.html?slug=' + k + '">' + p.title + '</a></h3>' +
