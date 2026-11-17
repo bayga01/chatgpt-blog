@@ -854,7 +854,46 @@ body.menu-open .mobile-menu { transform: translateX(0); }
   .grid, .related-grid { grid-template-columns: repeat(2, 1fr); }
   #featuredContent { grid-template-columns: repeat(2, 1fr); }
   .post-layout { grid-template-columns: 1fr; }
-  .toc { position: static; }
+  /* 移动端目录：搬到首图上方，用横向小标签展示，点一下直接跳到对应段落 */
+  .toc-mobile {
+    position: static;
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+  .toc-mobile h4 {
+    margin: 0 0 10px;
+    font-size: .88rem;
+    color: var(--color-text-muted);
+    letter-spacing: .04em;
+  }
+  .toc-mobile h4::before { content: "☰ "; }
+  .toc-mobile nav { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toc-mobile a {
+    display: inline-block;
+    max-width: 100%;
+    padding: 6px 12px;
+    margin: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-2);
+    color: var(--color-text-soft);
+    font-size: .84rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-left: 1px solid var(--color-border) !important;
+  }
+  /* 抵消 JS 给 h3 加的内联缩进，移动端标签不需要层级缩进 */
+  .toc-mobile a[style*="padding-left"] { padding-left: 12px !important; }
+  .toc-mobile a:hover, .toc-mobile a:active {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .stats { grid-template-columns: repeat(2, 1fr); }
 }
