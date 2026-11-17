@@ -572,10 +572,14 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   object-fit: cover;
   display: block;
 }
-/* 有封面图时：取消固定高度与裁切，按原图比例完整显示，不丢失画面内容 */
+/* 有封面图时：与正文列等宽、左对齐，按原图比例完整显示（不裁切），避免撑满首屏过大 */
 .post-cover.has-image {
   height: auto;
   display: block;
+}
+@media (min-width: 981px) {
+  /* 桌面：正文列宽 = 容器宽 - 侧栏280 - 间距48，封面与之对齐 */
+  .post-cover.has-image { max-width: calc(100% - 328px); margin-left: 0; margin-right: auto; }
 }
 .post-cover.has-image .cover-img {
   position: static;
