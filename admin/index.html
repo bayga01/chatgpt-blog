@@ -21,7 +21,8 @@
         .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     }
 
-    // ===== 自定义选色弹窗：返回 Promise，选中颜色后 resolve('#rrggbb')，取消 resolve(null) =====
+    // ===== 自定义选色弹窗：返回 Promise，选中后 resolve({color, bold})，取消 resolve(null) =====
+    // 说明：行内颜色文字是一个整体，不能再被工具栏单独加粗，所以把「加粗」放进弹窗一次设置。
     function cmsPickColor() {
       return new Promise(function (resolve) {
         var palette = [
@@ -38,12 +39,15 @@
           '<div style="font-size:17px;font-weight:800;color:#111827;margin-bottom:4px">🎨 选择文字颜色</div>' +
           '<div style="font-size:13px;color:#6b7280;margin-bottom:20px">已选中文字，点一个颜色即可</div>' +
           '<div id="cms-color-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px"></div>' +
+          '<label style="display:flex;align-items:center;gap:8px;margin-top:18px;font-size:14px;color:#374151;cursor:pointer;user-select:none">' +
+            '<input type="checkbox" id="cms-color-bold" style="width:16px;height:16px;cursor:pointer">同时加粗（想要又红又粗就勾上）</label>' +
           '<div style="margin-top:20px;text-align:right"><button id="cms-color-cancel" style="padding:8px 18px;border:none;background:#f3f4f6;color:#374151;border-radius:8px;cursor:pointer;font-size:14px">取消</button></div>';
         overlay.appendChild(box);
         document.body.appendChild(overlay);
 
         function cleanup() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
         var grid = box.querySelector('#cms-color-grid');
+        var boldBox = box.querySelector('#cms-color-bold');
         palette.forEach(function (c) {
           var btn = document.createElement('button');
           btn.type = 'button';
@@ -52,7 +56,10 @@
           btn.style.cssText = 'height:46px;border:2px solid ' + c.value + ';background:' + c.value + ';color:#fff;font-weight:700;font-size:14px;border-radius:9px;cursor:pointer;transition:transform .15s';
           btn.onmouseenter = function () { btn.style.transform = 'scale(1.06)'; };
           btn.onmouseleave = function () { btn.style.transform = 'scale(1)'; };
-          btn.onclick = function () { cleanup(); resolve(c.value); };
+          btn.onclick = function () {
+            var bold = !!(boldBox && boldBox.checked);
+            cleanup(); resolve({ color: c.value, bold: bold });
+          };
           grid.appendChild(btn);
         });
         box.querySelector('#cms-color-cancel').onclick = function () { cleanup(); resolve(null); };
@@ -60,28 +67,36 @@
       });
     }
 
-    // ===== 注册「文字颜色」行内组件：选中文字 -> 上色，不新起段落 =====
+    // ===== 注册「文字颜色」行内组件：选中文字 -> 上色（可选加粗），不新起段落 =====
     if (typeof CMS !== 'undefined' && CMS.registerEditorComponent) {
       CMS.registerEditorComponent({
         id: 'color-text',
         label: '🎨 文字颜色',
         icon: 'paint-brush',
         type: 'inline',
-        // 行内 pattern：匹配形如 <span class="cms-color" style="color:#e11d48;">文字</span>
-        // 注意：行内组件不能用 m 标志，量词用非贪婪
-        pattern: /<span class="cms-color" style="color:([^;"<]+);">([\s\S]*?)<\/span>/,
+        // 行内 pattern：匹配带可选加粗的 span，兼容旧格式（无 font-weight）
+        // match[1]=颜色, match[2]=加粗标志或 undefined, match[3]=文字
+        pattern: /<span class="cms-color" style="color:([^;"<]+);(font-weight:800;)?">([\s\S]*?)<\/span>/,
         fromInline: function (match) {
-          return { text: cmsUnescapeHtml(match[2] || ''), color: match[1] || '#e11d48' };
+          return {
+            text: cmsUnescapeHtml(match[3] || ''),
+            color: match[1] || '#e11d48',
+            bold: !!match[2]
+          };
         },
         toInline: function (data) {
           var color = String(data.color || '#e11d48').replace(/["<>;]/g, '');
-          return '<span class="cms-color" style="color:' + color + ';">' + cmsEscapeHtml(data.text) + '</span>';
+          var style = 'color:' + color + ';';
+          if (data.bold) style += 'font-weight:800;';
+          return '<span class="cms-color" style="' + style + '">' + cmsEscapeHtml(data.text) + '</span>';
         },
         toPreview: function (data) {
-          // 返回 React 元素，让编辑区里直接显示带颜色的文字（而不是显示 HTML 源码）
+          // 返回 React 元素，让编辑区里直接显示带颜色（及加粗）的文字，而不是 HTML 源码
           var color = String(data.color || '#e11d48').replace(/["<>;]/g, '');
+          var style = { color: color };
+          if (data.bold) style.fontWeight = '800';
           if (typeof h === 'function') {
-            return h('span', { style: { color: color } }, String(data.text || ''));
+            return h('span', { style: style }, String(data.text || ''));
           }
           return String(data.text || '');
         },
@@ -91,9 +106,9 @@
             window.alert('请先选中要变色的文字，再点「🎨 文字颜色」。');
             return Promise.resolve(null);
           }
-          return cmsPickColor().then(function (color) {
-            if (!color) return null;
-            return { text: text, color: color };
+          return cmsPickColor().then(function (res) {
+            if (!res) return null;
+            return { text: text, color: res.color, bold: res.bold };
           });
         }
       });
