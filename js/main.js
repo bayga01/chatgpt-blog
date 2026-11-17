@@ -355,9 +355,14 @@
     // 详情页封面：有上传图片则显示图片，未上传则显示 emoji
     var coverEl = document.getElementById("postCover");
     if (coverEl) {
-      coverEl.innerHTML = post.cover
-        ? '<img class="cover-img" src="' + post.cover + '" alt="' + (post.title || '') + '">'
-        : '<span class="emoji" id="postCoverEmoji">' + post.emoji + '</span>';
+      if (post.cover) {
+        // 有封面图：加标识类，让 CSS 按原图比例完整显示（不裁切）
+        coverEl.classList.add("has-image");
+        coverEl.innerHTML = '<img class="cover-img" src="' + post.cover + '" alt="' + (post.title || '') + '">';
+      } else {
+        coverEl.classList.remove("has-image");
+        coverEl.innerHTML = '<span class="emoji" id="postCoverEmoji">' + post.emoji + '</span>';
+      }
     }
 
     var crumbCat = document.getElementById("crumbCat");
