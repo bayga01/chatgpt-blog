@@ -182,8 +182,12 @@
   }
 
   function cardHTML(k, p) {
+    // 列表卡片缩略图：优先封面图片，未上传则回退 emoji
+    var thumbInner = p.cover
+      ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
+      : '<span class="emoji">' + p.emoji + '</span>';
     return '<article class="card reveal in" data-category="' + p.category + '" data-keywords="' + ((p.keywords || "") + " " + p.title) + '">' +
-        '<div class="thumb"><span class="cat-tag">' + p.category + '</span><span class="emoji">' + p.emoji + '</span></div>' +
+        '<div class="thumb"><span class="cat-tag">' + p.category + '</span>' + thumbInner + '</div>' +
         '<div class="body">' +
           '<div class="meta"><span>📅 ' + p.date + '</span><span>⏱ ' + p.readTime + '</span></div>' +
           '<h3><a href="post.html?slug=' + k + '">' + p.title + '</a></h3>' +
@@ -270,8 +274,12 @@
     var fpost = fk ? window.POSTS[fk] : null;
     var fc = document.getElementById("featuredContent");
     if (fc && fpost) {
+      // 精选大图：优先显示后台上传的封面图片(cover)，未上传时回退到 emoji，保证旧文章照常显示
+      var coverHtml = fpost.cover
+        ? '<img class="cover-img" src="' + fpost.cover + '" alt="' + (fpost.title || '') + '" loading="lazy">'
+        : '<span class="emoji">' + fpost.emoji + '</span>';
       fc.innerHTML =
-        '<div class="f-media"><span class="emoji">' + fpost.emoji + '</span></div>' +
+        '<div class="f-media">' + coverHtml + '</div>' +
         '<div class="f-body">' +
           '<span class="cat-tag">' + fpost.category + '</span>' +
           '<h2>' + fpost.title + '</h2>' +
@@ -344,7 +352,13 @@
     document.getElementById("postRead").textContent = "⏱ " + post.readTime;
     document.getElementById("postCat").textContent = post.category;
     document.getElementById("postAvatar").textContent = (post.author || "AI").slice(0, 1);
-    document.getElementById("postCoverEmoji").textContent = post.emoji;
+    // 详情页封面：有上传图片则显示图片，未上传则显示 emoji
+    var coverEl = document.getElementById("postCover");
+    if (coverEl) {
+      coverEl.innerHTML = post.cover
+        ? '<img class="cover-img" src="' + post.cover + '" alt="' + (post.title || '') + '">'
+        : '<span class="emoji" id="postCoverEmoji">' + post.emoji + '</span>';
+    }
 
     var crumbCat = document.getElementById("crumbCat");
     var crumbTitle = document.getElementById("crumbTitle");
@@ -405,8 +419,12 @@
       var p = window.POSTS[k];
       var card = document.createElement("article");
       card.className = "card";
+      // 相关阅读卡片同样优先封面图片，未上传回退 emoji
+      var relatedThumb = p.cover
+        ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
+        : '<span class="emoji">' + p.emoji + '</span>';
       card.innerHTML =
-        '<div class="thumb"><span class="cat-tag">' + p.category + '</span><span class="emoji">' + p.emoji + '</span></div>' +
+        '<div class="thumb"><span class="cat-tag">' + p.category + '</span>' + relatedThumb + '</div>' +
         '<div class="body"><div class="meta"><span>📅 ' + p.date + '</span><span>⏱ ' + p.readTime + '</span></div>' +
         '<h3><a href="post.html?slug=' + k + '">' + p.title + '</a></h3>' +
         '<p class="excerpt">' + p.excerpt + '</p>' +
