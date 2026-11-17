@@ -157,17 +157,21 @@
   var PAGE_SIZE = 12;
   var state = { filter: "all", search: "", page: 1 };
 
-  function getFeaturedKey() {
-    if (!window.POSTS) return null;
-    var keys = Object.keys(window.POSTS);
-    return keys.filter(function (k) { return window.POSTS[k].featured; })[0] || null;
+  // 所有勾选了「首页精选」的文章（按日期倒序，最多取 6 篇）
+  function getFeaturedKeys() {
+    if (!window.POSTS) return [];
+    var keys = Object.keys(window.POSTS).filter(function (k) { return window.POSTS[k].featured; });
+    keys.sort(function (a, b) {
+      return (window.POSTS[b].date || "").localeCompare(window.POSTS[a].date || "");
+    });
+    return keys.slice(0, 6);
   }
 
-  // 当前筛选/搜索后的文章列表（已排除精选，按日期倒序）
+  // 当前筛选/搜索后的文章列表（已排除所有精选文章，按日期倒序）
   function getFiltered() {
     if (!window.POSTS) return [];
-    var fk = getFeaturedKey();
-    var list = Object.keys(window.POSTS).filter(function (k) { return k !== fk; });
+    var fks = getFeaturedKeys();
+    var list = Object.keys(window.POSTS).filter(function (k) { return fks.indexOf(k) === -1; });
     list = list.filter(function (k) {
       var p = window.POSTS[k];
       var okCat = state.filter === "all" || p.category === state.filter;
@@ -270,23 +274,31 @@
   /* ---------- 首页渲染（发文只改 data/posts.json，后台可视化管理） ---------- */
   function renderHome() {
     if (!window.POSTS) return;
-    var fk = getFeaturedKey();
-    var fpost = fk ? window.POSTS[fk] : null;
+    var fks = getFeaturedKeys();
     var fc = document.getElementById("featuredContent");
-    if (fc && fpost) {
-      // 精选大图：优先显示后台上传的封面图片(cover)，未上传时回退到 emoji，保证旧文章照常显示
-      var coverHtml = fpost.cover
-        ? '<img class="cover-img" src="' + fpost.cover + '" alt="' + (fpost.title || '') + '" loading="lazy">'
-        : '<span class="emoji">' + fpost.emoji + '</span>';
-      fc.innerHTML =
-        '<div class="f-media">' + coverHtml + '</div>' +
-        '<div class="f-body">' +
-          '<span class="cat-tag">' + fpost.category + '</span>' +
-          '<h2>' + fpost.title + '</h2>' +
-          '<p>' + fpost.excerpt + '</p>' +
-          '<a href="post.html?slug=' + fk + '" class="btn btn-primary">阅读全文 ' +
-          '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>' +
-        '</div>';
+    if (fc) {
+      if (fks.length === 0) {
+        // 没有精选文章：隐藏整个精选区
+        var wrap = fc.closest(".featured");
+        if (wrap) wrap.style.display = "none";
+      } else {
+        // 多篇精选：渲染为可横向排列的小卡片（每张左边小图 + 右边文字）
+        fc.innerHTML = fks.map(function (k) {
+          var p = window.POSTS[k];
+          var thumb = p.cover
+            ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
+            : '<span class="emoji">' + p.emoji + '</span>';
+          return '<a class="f-card" href="post.html?slug=' + k + '">' +
+              '<div class="f-thumb"><span class="cat-tag">' + p.category + '</span>' + thumb + '</div>' +
+              '<div class="f-info">' +
+                '<h3>' + p.title + '</h3>' +
+                '<div class="f-excerpt">' + (p.excerpt || '') + '</div>' +
+                '<span class="f-read">阅读全文 ' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>' +
+              '</div>' +
+            '</a>';
+        }).join('');
+      }
     }
     renderGrid(); // 渲染列表第一页（自动排除精选文章）
   }
