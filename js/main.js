@@ -289,7 +289,7 @@
             ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
             : '<span class="emoji">' + p.emoji + '</span>';
           return '<a class="f-card" href="post.html?slug=' + k + '">' +
-              '<div class="f-thumb"><span class="cat-tag">' + p.category + '</span>' + thumb + '</div>' +
+              '<div class="f-thumb' + (p.cover ? ' has-cover' : '') + '"><span class="cat-tag">' + p.category + '</span>' + thumb + '</div>' +
               '<div class="f-info">' +
                 '<h3>' + p.title + '</h3>' +
                 '<div class="f-excerpt">' + (p.excerpt || '') + '</div>' +
@@ -475,7 +475,7 @@
         ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
         : '<span class="emoji">' + p.emoji + '</span>';
       card.innerHTML =
-        '<div class="thumb"><span class="cat-tag">' + p.category + '</span>' + relatedThumb + '</div>' +
+        '<div class="thumb' + (p.cover ? ' has-cover' : '') + '"><span class="cat-tag">' + p.category + '</span>' + relatedThumb + '</div>' +
         '<div class="body"><div class="meta"><span>📅 ' + p.date + '</span><span>⏱ ' + p.readTime + '</span></div>' +
         '<h3><a href="post.html?slug=' + k + '">' + p.title + '</a></h3>' +
         '<p class="excerpt">' + p.excerpt + '</p>' +
