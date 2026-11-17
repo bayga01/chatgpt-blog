@@ -157,13 +157,13 @@
   var PAGE_SIZE = 12;
   var state = { filter: "all", search: "", page: 1 };
 
-  // 所有勾选了「首页精选」的文章（按日期倒序，最多取 6 篇）
+  // 所有勾选了「首页精选」的文章（最多取 6 篇）
+  // 按后台发布顺序倒序：数据源里越靠后 = 越新发布的文章，倒序后最新发布的自动排第一个。
+  // 用发布顺序而非「发布日期」，避免漏填/填错日期时新文章排到后面去。
   function getFeaturedKeys() {
     if (!window.POSTS) return [];
     var keys = Object.keys(window.POSTS).filter(function (k) { return window.POSTS[k].featured; });
-    keys.sort(function (a, b) {
-      return (window.POSTS[b].date || "").localeCompare(window.POSTS[a].date || "");
-    });
+    keys.reverse();
     return keys.slice(0, 6);
   }
 
