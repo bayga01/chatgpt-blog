@@ -7,78 +7,101 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-  <!-- Decap CMS 会自动在此挂载可视化后台界面 -->
-  <script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
+  <!-- Decap CMS 会自动在此挂载可视化后台界面。
+       3.17.3 起支持「行内组件」，用于给选中文字改颜色而不破坏段落。 -->
+  <script src="https://unpkg.com/decap-cms@3.17.3/dist/decap-cms.js"></script>
   <script>
-    // 注册「彩色文字」工具：正文编辑器的工具栏里点「插入组件」即可给文字上色，
-    // 不懂代码也能用——填文字、选颜色即可，保存后网站前台会显示对应颜色。
-    if (typeof CMS !== "undefined" && CMS.registerEditorComponent) {
+    // ===== 工具：HTML 转义 / 反转义（用于行内组件的 markdown 存取）=====
+    function cmsEscapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function cmsUnescapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    }
+
+    // ===== 自定义选色弹窗：返回 Promise，选中颜色后 resolve('#rrggbb')，取消 resolve(null) =====
+    function cmsPickColor() {
+      return new Promise(function (resolve) {
+        var palette = [
+          { name: '红', value: '#e11d48' }, { name: '橙', value: '#ea580c' },
+          { name: '金', value: '#d97706' }, { name: '绿', value: '#16a34a' },
+          { name: '青', value: '#0891b2' }, { name: '蓝', value: '#2563eb' },
+          { name: '紫', value: '#7c3aed' }, { name: '黑', value: '#1f2937' }
+        ];
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;font-family:-apple-system,"Segoe UI",sans-serif;';
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#fff;border-radius:14px;padding:26px 26px 20px;box-shadow:0 24px 60px rgba(0,0,0,.35);width:340px;max-width:90vw;';
+        box.innerHTML =
+          '<div style="font-size:17px;font-weight:800;color:#111827;margin-bottom:4px">🎨 选择文字颜色</div>' +
+          '<div style="font-size:13px;color:#6b7280;margin-bottom:20px">已选中文字，点一个颜色即可</div>' +
+          '<div id="cms-color-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px"></div>' +
+          '<div style="margin-top:20px;text-align:right"><button id="cms-color-cancel" style="padding:8px 18px;border:none;background:#f3f4f6;color:#374151;border-radius:8px;cursor:pointer;font-size:14px">取消</button></div>';
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        function cleanup() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+        var grid = box.querySelector('#cms-color-grid');
+        palette.forEach(function (c) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.title = c.name;
+          btn.textContent = c.name;
+          btn.style.cssText = 'height:46px;border:2px solid ' + c.value + ';background:' + c.value + ';color:#fff;font-weight:700;font-size:14px;border-radius:9px;cursor:pointer;transition:transform .15s';
+          btn.onmouseenter = function () { btn.style.transform = 'scale(1.06)'; };
+          btn.onmouseleave = function () { btn.style.transform = 'scale(1)'; };
+          btn.onclick = function () { cleanup(); resolve(c.value); };
+          grid.appendChild(btn);
+        });
+        box.querySelector('#cms-color-cancel').onclick = function () { cleanup(); resolve(null); };
+        overlay.onclick = function (e) { if (e.target === overlay) { cleanup(); resolve(null); } };
+      });
+    }
+
+    // ===== 注册「文字颜色」行内组件：选中文字 -> 上色，不新起段落 =====
+    if (typeof CMS !== 'undefined' && CMS.registerEditorComponent) {
       CMS.registerEditorComponent({
-        id: "color-text",
-        label: "🎨 彩色文字",
-        icon: "paint-brush",
-        fields: [
-          { name: "text", label: "要变色的文字", widget: "string", hint: "只输入需要改变颜色的那几个字" },
-          { name: "color", label: "文字颜色", widget: "color", default: "#e11d48", allowInput: true },
-          { name: "bold", label: "同时加粗", widget: "boolean", default: false }
-        ],
-        // 宽松匹配，方便 remark 重新序列化后依然能识别已插入的彩色文字
-        pattern: /<span class="cms-color"[^>]*>([\s\S]*?)<\/span>/g,
-        fromBlock: function (match) {
-          var raw = match[0] || "";
-          var colorMatch = /color:\s*(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)/.exec(raw);
-          return {
-            text: String(match[1] || "")
-              .replace(/<br>/g, "\n")
-              .replace(/&lt;/g, "<")
-              .replace(/&gt;/g, ">"),
-            color: colorMatch ? colorMatch[1] : "#e11d48",
-            bold: /font-weight:\s*(700|800|bold)/i.test(raw)
-          };
+        id: 'color-text',
+        label: '🎨 文字颜色',
+        icon: 'paint-brush',
+        type: 'inline',
+        // 行内 pattern：匹配形如 <span class="cms-color" style="color:#e11d48;">文字</span>
+        // 注意：行内组件不能用 m 标志，量词用非贪婪
+        pattern: /<span class="cms-color" style="color:([^;"<]+);">([\s\S]*?)<\/span>/,
+        fromInline: function (match) {
+          return { text: cmsUnescapeHtml(match[2] || ''), color: match[1] || '#e11d48' };
         },
-        toBlock: function (data) {
-          var color = String(data.color || "#e11d48").replace(/["<>]/g, "");
-          var weight = data.bold ? "font-weight:800;" : "";
-          var text = String(data.text || "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/\n/g, "<br>");
-          return '<span class="cms-color" style="color:' + color + ';' + weight + '">' + text + '</span>';
+        toInline: function (data) {
+          var color = String(data.color || '#e11d48').replace(/["<>;]/g, '');
+          return '<span class="cms-color" style="color:' + color + ';">' + cmsEscapeHtml(data.text) + '</span>';
         },
         toPreview: function (data) {
-          var color = String(data.color || "#e11d48").replace(/["<>]/g, "");
-          var weight = data.bold ? "font-weight:800;" : "";
-          return '<span style="color:' + color + ';' + weight + '">' + (data.text || "") + '</span>';
+          // 返回 React 元素，让编辑区里直接显示带颜色的文字（而不是显示 HTML 源码）
+          var color = String(data.color || '#e11d48').replace(/["<>;]/g, '');
+          if (typeof h === 'function') {
+            return h('span', { style: { color: color } }, String(data.text || ''));
+          }
+          return String(data.text || '');
+        },
+        onInsert: function (ctx) {
+          var text = (ctx && ctx.selectedText) || '';
+          if (!text.trim()) {
+            window.alert('请先选中要变色的文字，再点「🎨 文字颜色」。');
+            return Promise.resolve(null);
+          }
+          return cmsPickColor().then(function (color) {
+            if (!color) return null;
+            return { text: text, color: color };
+          });
         }
       });
     }
-    // 自定义预览样式：后台右侧实时预览尽量贴近前台
-    if (typeof CMS !== "undefined" && CMS.registerPreviewStyle) {
-      CMS.registerPreviewStyle("../css/style.css");
-    }
-    // 注册文章预览模板（hbs），让右侧预览接近真实文章页
-    if (typeof CMS !== "undefined" && CMS.registerPreviewTemplate) {
-      var PostPreview = CMS.createClass({
-        render: function () {
-          var p = this.props.entry.toJS().data;
-          var body = p.content || "";
-          // 后台预览里 content 是 markdown 字符串，简单转换标题/段落
-          var html = body
-            .replace(/^### (.*)$/gm, "<h3>$1</h3>")
-            .replace(/^## (.*)$/gm, "<h2>$1</h2>")
-            .replace(/^> (.*)$/gm, "<blockquote>$1</blockquote>")
-            .split(/\n{2,}/).map(function (b) {
-              return /^<(h2|h3|blockquote)/.test(b.trim()) ? b : "<p>" + b.replace(/\n/g, "<br>") + "</p>";
-            }).join("");
-          return h("div", { className: "article", style: "padding:24px" },
-            h("h1", null, p.title || "文章标题"),
-            h("div", { style: "color:#888;margin-bottom:18px" }, (p.date || "") + " · " + (p.category || "") + " · " + (p.readTime || "")),
-            h("div", { innerHTML: html })
-          );
-        }
-      });
-      CMS.registerPreviewTemplate("posts", PostPreview);
+
+    // 后台右侧预览沿用站点样式（预览模板用 Decap 默认实现，避免自定义模板报错）
+    if (typeof CMS !== 'undefined' && CMS.registerPreviewStyle) {
+      CMS.registerPreviewStyle('../css/style.css');
     }
   </script>
 </body>
