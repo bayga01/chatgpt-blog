@@ -22,6 +22,17 @@
     });
   }
 
+  // marked v12（CommonMark）规定：加粗结束符 ** 后面若紧跟"词字符"（中文/字母/数字），
+  // 会被判定为无法闭合，导致 **文字**中文 原样显示星号。
+  // 这里在闭合 ** 后补一个空格使其合法，保证 **注重隐私保护：**在... 能正常渲染为加粗。
+  // 仅作用于 Markdown 正文，老文章的纯 HTML 内容不受影响。
+  function normalizeBold(text) {
+    if (!text || typeof text !== "string") return text;
+    // 内容排除「句末标点 + 换行」，避免跨句把两段独立的 ** 误当成一对
+    // （中间隔着 。！？；， 说明已跨句）。引号、冒号等短语句内标点允许保留。
+    return text.replace(/(\*\*[^。！？；，\n*]{1,60}\*\*)(?=[\u4e00-\u9fffA-Za-z0-9])/g, "$1 ");
+  }
+
   function toMap(json) {
     var map = {};
     var list = json && json.posts ? json.posts : (Array.isArray(json) ? json : []);
@@ -33,7 +44,7 @@
       var mdParse = md && (typeof md.parse === "function" ? md.parse.bind(md) : (typeof md === "function" ? md : null));
       var rendered;
       if (p.content != null && mdParse) {
-        try { rendered = mdParse(p.content); } catch (e) { rendered = p.content; }
+        try { rendered = mdParse(normalizeBold(p.content)); } catch (e) { rendered = p.content; }
       } else {
         rendered = p.content || "";
       }
