@@ -15,11 +15,18 @@
   // 已有 target 的不重复处理，页内锚点（#xxx）保持原窗口跳转。
   function externalizeLinks(html) {
     if (!html) return html;
-    return html.replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>/gi, function (tag, href) {
+    html = html.replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>/gi, function (tag, href) {
       if (/^\s*#/.test(href)) return tag;                       // 页内锚点，跳过
       if (/\btarget\s*=/.test(tag)) return tag;                 // 已指定 target，跳过
       return tag.replace(/\s*>$/, ' target="_blank" rel="noopener noreferrer">');
     });
+    // 正文图片懒加载：滚动到附近才加载，避免一次性下载全部大图拖慢首屏。
+    // 已有 loading 属性的不重复处理。
+    html = html.replace(/<img\s+[^>]*>/gi, function (tag) {
+      if (/\bloading\s*=/.test(tag)) return tag;
+      return tag.replace(/\s*>$/, ' loading="lazy" decoding="async">');
+    });
+    return html;
   }
 
   // marked v12（CommonMark）规定：加粗结束符 ** 后面若紧跟"词字符"（中文/字母/数字），
@@ -390,7 +397,7 @@
       if (post.cover) {
         // 有封面图：加标识类，让 CSS 按原图比例完整显示（不裁切）
         coverEl.classList.add("has-image");
-        coverEl.innerHTML = '<img class="cover-img" src="' + post.cover + '" alt="' + (post.title || '') + '">';
+        coverEl.innerHTML = '<img class="cover-img" src="' + post.cover + '" alt="' + (post.title || '') + '" fetchpriority="high">';
       } else {
         coverEl.classList.remove("has-image");
         coverEl.innerHTML = '<span class="emoji" id="postCoverEmoji">' + post.emoji + '</span>';
