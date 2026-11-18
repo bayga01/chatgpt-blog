@@ -333,16 +333,16 @@
       slug = null;
     }
 
-    var siteName = "聚合平台-chatGPT";
+    var siteName = "AI聚合";
     var pageUrl = "https://dianlijuhe.com/post.html?slug=" + (slug || "");
-    document.title = post.title + " · " + siteName;
+    document.title = post.title + " - " + siteName;
 
     // 动态更新 SEO 元信息（让不执行 JS 以外的爬虫/分享也能拿到正确信息）
     var desc = post.excerpt || post.title;
     var metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute("content", desc);
     var ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute("content", post.title + " · " + siteName);
+    if (ogTitle) ogTitle.setAttribute("content", post.title + " - " + siteName);
     var ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute("content", desc);
     var ogUrl = document.querySelector('meta[property="og:url"]');
