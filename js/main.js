@@ -338,9 +338,22 @@
      ============================================================ */
   function loadViewCount(slug, el, fallbackText) {
     if (!slug || !el) return; // 未知 slug（文章不存在兜底）不计数
-    var key = "cgpt_viewed_" + slug;
+    var countedKey = "cgpt_viewed_" + slug;  // 本次会话是否已计数
+    var numKey = "cgpt_viewnum_" + slug;     // 缓存上次读到的数字
+
+    // 1) 先用本地缓存的数字立即显示：二次进入几乎瞬间到位，不闪 ⏱。
+    //    没有缓存时显示 "👁 ..."（图标一致），接口回来后再替换成真实数字。
+    var cached = null;
+    try { cached = localStorage.getItem(numKey); } catch (e) {}
+    if (cached !== null && /^\d+$/.test(cached)) {
+      el.textContent = "👁 " + Number(cached).toLocaleString("zh-CN");
+    } else {
+      el.textContent = "👁 ...";
+    }
+
+    // 2) 本次会话是否已 +1（防止同一标签页刷新重复计数）
     var counted = false;
-    try { counted = sessionStorage.getItem(key) === "1"; } catch (e) {}
+    try { counted = sessionStorage.getItem(countedKey) === "1"; } catch (e) {}
 
     var opt = counted
       ? { method: "GET", cache: "no-store" }   // 已计过：只读取，不再 +1
@@ -352,13 +365,12 @@
       .then(function (data) {
         if (!data || !data.ok || typeof data.count !== "number") throw new Error("bad data");
         el.textContent = "👁 " + data.count.toLocaleString("zh-CN");
-        if (!counted) { try { sessionStorage.setItem(key, "1"); } catch (e) {} }
+        try { localStorage.setItem(numKey, String(data.count)); } catch (e) {} // 更新缓存
+        if (!counted) { try { sessionStorage.setItem(countedKey, "1"); } catch (e) {} }
       })
       .catch(function () {
-        // 接口失败：保留 fallback（阅读时长），页面不受影响
-        if (el.textContent === "" || el.textContent.indexOf("阅读中") > -1) {
-          el.textContent = fallbackText;
-        }
+        // 接口失败：有缓存数字就保留它，只有完全没有缓存时才回退到阅读时长
+        if (cached === null) el.textContent = fallbackText;
       });
   }
 
@@ -420,10 +432,9 @@
     titleEl.textContent = post.title;
     document.getElementById("postAuthor").textContent = post.author;
     document.getElementById("postDate").textContent = "📅 " + post.date;
-    // 阅读量：默认先显示阅读时长，接口成功后替换为真实阅读数
+    // 阅读量：由 loadViewCount 立即接管显示（缓存数字或 "👁 ..."），不再先闪阅读时长
     var readEl = document.getElementById("postRead");
     var readFallback = "⏱ " + post.readTime;
-    readEl.textContent = readFallback;
     loadViewCount(slug, readEl, readFallback);
     document.getElementById("postCat").textContent = post.category;
     document.getElementById("postAvatar").textContent = (post.author || "AI").slice(0, 1);
