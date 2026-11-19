@@ -331,6 +331,38 @@
   }
 
   /* ============================================================
+     阅读量：调用 D1 计数接口，sessionStorage 防止刷新重复计数
+     - 同一标签页内刷新/返回不会重复 +1
+     - 换标签页或关掉重开算一次新阅读（符合"进入文章"的语义）
+     - 接口不可用（未绑定 D1 / 本地预览）时降级显示原阅读时长，不影响页面
+     ============================================================ */
+  function loadViewCount(slug, el, fallbackText) {
+    if (!slug || !el) return; // 未知 slug（文章不存在兜底）不计数
+    var key = "cgpt_viewed_" + slug;
+    var counted = false;
+    try { counted = sessionStorage.getItem(key) === "1"; } catch (e) {}
+
+    var opt = counted
+      ? { method: "GET", cache: "no-store" }   // 已计过：只读取，不再 +1
+      : { method: "POST", cache: "no-store" }; // 首次进入：+1
+
+    var url = "api/views?slug=" + encodeURIComponent(slug);
+    fetch(url, opt)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+      .then(function (data) {
+        if (!data || !data.ok || typeof data.count !== "number") throw new Error("bad data");
+        el.textContent = "👁 " + data.count.toLocaleString("zh-CN");
+        if (!counted) { try { sessionStorage.setItem(key, "1"); } catch (e) {} }
+      })
+      .catch(function () {
+        // 接口失败：保留 fallback（阅读时长），页面不受影响
+        if (el.textContent === "" || el.textContent.indexOf("阅读中") > -1) {
+          el.textContent = fallbackText;
+        }
+      });
+  }
+
+  /* ============================================================
      文章详情页渲染
      ============================================================ */
   function renderPost() {
@@ -388,7 +420,11 @@
     titleEl.textContent = post.title;
     document.getElementById("postAuthor").textContent = post.author;
     document.getElementById("postDate").textContent = "📅 " + post.date;
-    document.getElementById("postRead").textContent = "⏱ " + post.readTime;
+    // 阅读量：默认先显示阅读时长，接口成功后替换为真实阅读数
+    var readEl = document.getElementById("postRead");
+    var readFallback = "⏱ " + post.readTime;
+    readEl.textContent = readFallback;
+    loadViewCount(slug, readEl, readFallback);
     document.getElementById("postCat").textContent = post.category;
     document.getElementById("postAvatar").textContent = (post.author || "AI").slice(0, 1);
     // 详情页封面：有上传图片则显示图片，未上传则显示 emoji
