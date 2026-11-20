@@ -32,10 +32,20 @@ function getSlug(url) {
 
 export async function onRequestGet(context) {
   const { request, env } = context;
-  const slug = getSlug(new URL(request.url));
-  if (!slug) return json({ ok: false, error: 'invalid slug' }, 400);
   const db = env.DB;
   if (!db) return json({ ok: false, error: 'DB not bound' }, 503);
+  const url = new URL(request.url);
+  const slug = getSlug(url);
+
+  // 不带 slug：返回全站累计阅读量（首页「万读者阅读」用）
+  if (!slug) {
+    try {
+      const row = await db.prepare('SELECT SUM(count) AS total FROM views').first();
+      return json({ ok: true, total: row && row.total ? row.total : 0 });
+    } catch (e) {
+      return json({ ok: false, error: String((e && e.message) || e) }, 500);
+    }
+  }
 
   try {
     const row = await db.prepare('SELECT count FROM views WHERE slug = ?').bind(slug).first();
