@@ -222,9 +222,9 @@
         '<div class="thumb' + (p.cover ? ' has-cover' : '') + '"><span class="cat-tag">' + p.category + '</span>' + thumbInner + '</div>' +
         '<div class="body">' +
           '<div class="meta"><span>📅 ' + p.date + '</span><span>⏱ ' + p.readTime + '</span></div>' +
-          '<h3><a href="post.html?slug=' + k + '">' + p.title + '</a></h3>' +
+          '<h3><a href="post.html?slug=' + k + '" target="_blank" rel="noopener noreferrer">' + p.title + '</a></h3>' +
           '<p class="excerpt">' + p.excerpt + '</p>' +
-          '<a href="post.html?slug=' + k + '" class="read">阅读全文 ' +
+          '<a href="post.html?slug=' + k + '" class="read" target="_blank" rel="noopener noreferrer">阅读全文 ' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>' +
         '</div></article>';
   }
@@ -316,7 +316,7 @@
           var thumb = p.cover
             ? '<img class="cover-img" src="' + p.cover + '" alt="' + (p.title || '') + '" loading="lazy">'
             : '<span class="emoji">' + p.emoji + '</span>';
-          return '<a class="f-card" href="post.html?slug=' + k + '">' +
+          return '<a class="f-card" href="post.html?slug=' + k + '" target="_blank" rel="noopener noreferrer">' +
               '<div class="f-thumb' + (p.cover ? ' has-cover' : '') + '"><span class="cat-tag">' + p.category + '</span>' + thumb + '</div>' +
               '<div class="f-info">' +
                 '<h3>' + p.title + '</h3>' +
@@ -585,9 +585,9 @@
       card.innerHTML =
         '<div class="thumb' + (p.cover ? ' has-cover' : '') + '"><span class="cat-tag">' + p.category + '</span>' + relatedThumb + '</div>' +
         '<div class="body"><div class="meta"><span>📅 ' + p.date + '</span><span>⏱ ' + p.readTime + '</span></div>' +
-        '<h3><a href="post.html?slug=' + k + '">' + p.title + '</a></h3>' +
+        '<h3><a href="post.html?slug=' + k + '" target="_blank" rel="noopener noreferrer">' + p.title + '</a></h3>' +
         '<p class="excerpt">' + p.excerpt + '</p>' +
-        '<a href="post.html?slug=' + k + '" class="read">阅读全文 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>';
+        '<a href="post.html?slug=' + k + '" class="read" target="_blank" rel="noopener noreferrer">阅读全文 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>';
       box.appendChild(card);
     });
   }
