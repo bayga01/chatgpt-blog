@@ -114,6 +114,113 @@
       });
     }
 
+    // ===== 文本工具辅助函数：清除 markdown 格式 / 复制到剪贴板 / 读取剪贴板 =====
+
+    // 去掉常见 markdown 标记，只保留纯文字（"清除格式"用）
+    function cmsStripFormat(text) {
+      return String(text == null ? '' : text)
+        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')        // 图片 -> alt
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')         // 链接 -> 文字
+        .replace(/<[^>]+>/g, '')                          // HTML 标签
+        .replace(/\*\*([^*]+)\*\*/g, '$1')                // 粗体
+        .replace(/__([^_]+)__/g, '$1')
+        .replace(/~~([^~]+)~~/g, '$1')                    // 删除线
+        .replace(/`([^`]+)`/g, '$1')                      // 行内代码
+        .replace(/(^|\n)\s{0,3}#{1,6}\s+/g, '$1')         // 标题
+        .replace(/(^|\n)\s{0,3}>\s?/g, '$1')              // 引用
+        .replace(/(^|\n)\s*[-*+]\s+/g, '$1')              // 无序列表
+        .replace(/(^|\n)\s*\d+\.\s+/g, '$1')              // 有序列表
+        .replace(/\*([^*]+)\*/g, '$1')                    // 斜体
+        .replace(/_([^_]+)_/g, '$1');
+    }
+
+    // 写剪贴板：优先 Clipboard API，失败回退 execCommand
+    function cmsCopy(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(function () {
+          return cmsCopyFallback(text);
+        });
+      }
+      return Promise.resolve(cmsCopyFallback(text));
+    }
+    function cmsCopyFallback(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    // 读剪贴板：需要用户点击手势 + HTTPS（本站满足）
+    function cmsReadClipboard() {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        return navigator.clipboard.readText().catch(function () { return null; });
+      }
+      return Promise.resolve(null);
+    }
+
+    if (typeof CMS !== 'undefined' && CMS.registerEditorComponent) {
+
+      // 📋 复制：把选中文字复制到剪贴板，不改文档（返回 null 取消插入）
+      CMS.registerEditorComponent({
+        id: 'tool-copy',
+        label: '📋 复制',
+        icon: 'copy',
+        type: 'inline',
+        pattern: /^\uE000COPY\uE000$/,
+        fromInline: function (m) { return { text: '' }; },
+        toInline: function (d) { return String(d.text || ''); },
+        toPreview: function (d) { return String(d.text || ''); },
+        onInsert: function (ctx) {
+          var text = (ctx && ctx.selectedText) || '';
+          if (!text) { window.alert('请先在正文里选中要复制的文字，再点「📋 复制」。'); return Promise.resolve(null); }
+          return cmsCopy(text).then(function () {
+            window.alert('已复制 ' + text.length + ' 个字符到剪贴板。');
+            return null; // 不改动文档
+          });
+        }
+      });
+
+      // 🧹 清除格式：把选中文字的 markdown 标记去掉，替换为纯文本
+      CMS.registerEditorComponent({
+        id: 'tool-clear',
+        label: '🧹 清除格式',
+        icon: 'eraser',
+        type: 'inline',
+        pattern: /^\uE000CLEAR\uE000$/,
+        fromInline: function (m) { return { text: '' }; },
+        toInline: function (d) { return String(d.text || ''); },
+        toPreview: function (d) { return String(d.text || ''); },
+        onInsert: function (ctx) {
+          var text = (ctx && ctx.selectedText) || '';
+          if (!text) { window.alert('请先在正文里选中要清除格式的文字，再点「🧹 清除格式」。'); return Promise.resolve(null); }
+          return Promise.resolve({ text: cmsStripFormat(text) });
+        }
+      });
+
+      // 📄 粘贴：读取剪贴板里的纯文本，插入到正文（替换选中文字）
+      CMS.registerEditorComponent({
+        id: 'tool-paste',
+        label: '📄 粘贴',
+        icon: 'clipboard',
+        type: 'inline',
+        pattern: /^\uE000PASTE\uE000$/,
+        fromInline: function (m) { return { text: '' }; },
+        toInline: function (d) { return String(d.text || ''); },
+        toPreview: function (d) { return String(d.text || ''); },
+        onInsert: function (ctx) {
+          return cmsReadClipboard().then(function (text) {
+            if (text == null || text === '') {
+              window.alert('无法读取剪贴板，请直接在正文里按 Ctrl+V 粘贴。');
+              return null;
+            }
+            return { text: text };
+          });
+        }
+      });
+    }
+
     // 后台右侧预览沿用站点样式（预览模板用 Decap 默认实现，避免自定义模板报错）
     if (typeof CMS !== 'undefined' && CMS.registerPreviewStyle) {
       CMS.registerPreviewStyle('../css/style.css');
