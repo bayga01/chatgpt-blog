@@ -160,7 +160,8 @@
   function setupCounters() {
     if (countersReady) return;
     countersReady = true;
-    var counters = document.querySelectorAll("[data-count]");
+    // statReaders 由 D1 阅读量接口单独驱动（显示为 x.xxxx 万），排除在整数计数动画之外
+    var counters = document.querySelectorAll("[data-count]:not(#statReaders)");
     if ("IntersectionObserver" in window && counters.length) {
       var cio = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {
@@ -372,6 +373,39 @@
         // 接口失败：有缓存数字就保留它，只有完全没有缓存时才回退到阅读时长
         if (cached === null) el.textContent = fallbackText;
       });
+  }
+
+  /* ============================================================
+     首页「万读者阅读」动态化：9 万展示基数 + D1 真实累计阅读量
+     - /api/views 不带 slug 时返回全站累计阅读总数
+     - 显示 x.xxxx 万（4 位小数），个位增长体现在小数第 4 位
+     - 接口不可用时保留本地缓存/基数，不影响页面
+     ============================================================ */
+  function loadTotalReads() {
+    var el = document.getElementById("statReaders");
+    if (!el) return; // 非首页，跳过
+    var BASE = 90000; // 展示基数：9 万（与 label「万读者阅读」对应）
+    var cacheKey = "cgpt_totalreads";
+
+    function render(total) {
+      var n = Number(total);
+      if (!isFinite(n) || n < 0) n = 0;
+      el.textContent = ((BASE + n) / 10000).toFixed(4);
+    }
+
+    // 先用本地缓存立即显示，避免闪 0；无缓存则显示 9.0000
+    var cached = null;
+    try { cached = localStorage.getItem(cacheKey); } catch (e) {}
+    render(cached);
+
+    fetch("api/views", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+      .then(function (data) {
+        if (!data || !data.ok || typeof data.total !== "number") throw new Error("bad data");
+        render(data.total);
+        try { localStorage.setItem(cacheKey, String(data.total)); } catch (e) {}
+      })
+      .catch(function () { /* 接口失败：保留上面的基数/缓存显示，不影响页面 */ });
   }
 
   /* ============================================================
@@ -595,6 +629,8 @@
   }
 
   /* ---------- 启动：数据就绪后再渲染首页/详情页 ---------- */
+  loadTotalReads();   // 首页「万读者阅读」：与文章数据无关，立即发起接口请求
+
   loadPosts(function () {
     // 文章总数改为真实数据（新增文章后自动更新，避免写死数字失真）
     var statPosts = document.getElementById("statPosts");
