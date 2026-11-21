@@ -938,8 +938,10 @@ body.menu-open .mobile-menu { transform: translateX(0); }
   .footer-grid { grid-template-columns: 1fr; margin-bottom: 16px; }
   /* 手机端隐藏页脚「内容」链接列，减少底部留白；PC/平板正常显示 */
   .footer-links { display: none; }
-  /* 手机端收紧页脚简介与版权之间的间距 */
-  .footer-about p { margin: 8px 0 0; }
+  /* 手机端把品牌与简介并排一行，减少底部高度；PC/平板保持原样上下排列 */
+  .footer-about { display: flex; align-items: flex-start; gap: 10px; }
+  .footer-about .brand { margin-bottom: 0 !important; flex-shrink: 0; }
+  .footer-about p { margin: 0; flex: 1; }
   .hero { padding: 48px 0 32px; }
   .stats { margin-bottom: 36px; }
   /* 手机上按钮略小、更贴边，减少对正文的遮挡 */
