@@ -817,6 +817,8 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
 .footer-grid h4 { font-size: .95rem; margin: 0 0 14px; }
 .footer-grid a { display: block; color: var(--color-text-soft); padding: 5px 0; font-size: .92rem; }
 .footer-grid a:hover { color: var(--color-primary); }
+/* 页脚品牌「AI聚合」不是链接，鼠标悬停保持原色，不变主题色 */
+.footer-about .brand:hover { color: var(--color-text-soft); }
 .footer-about p { color: var(--color-text-soft); font-size: .92rem; max-width: 34ch; }
 .footer-bottom {
   display: flex; justify-content: space-between; align-items: center;
