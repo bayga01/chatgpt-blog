@@ -376,6 +376,68 @@
   }
 
   /* ============================================================
+     实时在线人数：统计最近 N 秒内活跃的匿名访客数
+     - 每个浏览器在 localStorage 生成匿名 vid（同一人多标签页算 1 人）
+     - 打开页面 + 每 60 秒心跳上报一次（POST /api/online），保持在线
+     - 每 30 秒拉取在线人数（GET /api/online），首页显示、数字会随在线人数波动
+     - 离开页面用 sendBeacon 通知离线；即使失败，服务端超时也会自动判定离线
+     ============================================================ */
+  function setupOnlineVisitors() {
+    var el = document.getElementById("onlineVisitors"); // 仅首页有该元素；文章页为 null
+    var vidKey = "cgpt_vid";
+
+    // 1) 匿名访客 ID：优先复用本地已生成的，保证同一浏览器稳定
+    var vid = null;
+    try { vid = localStorage.getItem(vidKey); } catch (e) {}
+    if (!vid || !/^[a-zA-Z0-9_-]{6,64}$/.test(vid)) {
+      vid = "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+      try { localStorage.setItem(vidKey, vid); } catch (e) {}
+    }
+
+    var API = "api/online";
+
+    // 2) 上报在线（心跳）：POST { vid } -> 服务端记录最后活跃时间
+    function ping() {
+      var body = JSON.stringify({ vid: vid });
+      if (navigator.sendBeacon) {
+        // sendBeacon 更适合心跳/离开场景，不阻塞、页面关闭也能发出
+        try { if (navigator.sendBeacon(API, new Blob([body], { type: "application/json" }))) return; } catch (e) {}
+      }
+      fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, cache: "no-store" })
+        .catch(function () {});
+    }
+
+    // 3) 拉取在线人数并更新显示
+    function refresh() {
+      fetch(API, { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+        .then(function (data) {
+          if (data && data.ok && typeof data.online === "number" && el) {
+            el.textContent = data.online.toLocaleString("zh-CN");
+          }
+        })
+        .catch(function () {});
+    }
+
+    ping();                       // 首次进入立即上报
+    refresh();                    // 立即显示一次
+    setInterval(ping, 60000);     // 每 60 秒心跳保活（服务端在线窗口设为 150 秒）
+    if (el) setInterval(refresh, 30000); // 首页每 30 秒刷新显示
+
+    // 页面隐藏/关闭时通知离线（best-effort，服务端超时兜底）
+    function leave() {
+      var body = JSON.stringify({ vid: vid, leave: true });
+      if (navigator.sendBeacon) {
+        try { navigator.sendBeacon(API, new Blob([body], { type: "application/json" })); } catch (e) {}
+      }
+    }
+    window.addEventListener("pagehide", leave);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) leave(); else ping();
+    });
+  }
+
+  /* ============================================================
      首页「万读者阅读」动态化：9 万展示基数 + D1 真实累计阅读量
      - /api/views 不带 slug 时返回全站累计阅读总数
      - 显示 x.xx 万（2 位小数），保持简洁
@@ -644,5 +706,6 @@
     renderHome();   // 首页：精选 + 分页列表（非首页时内部元素为空，自动跳过）
     renderPost();   // 详情页：正文 + 目录 + 相关阅读
     setupToTop();   // 回到顶部按钮：所有页面通用
+    setupOnlineVisitors(); // 实时在线人数：全站页面上报心跳，仅首页显示人数
   });
 })();
