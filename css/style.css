@@ -243,8 +243,19 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
   border-bottom: 1px solid var(--color-border);
   font-weight: 700;
 }
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+.dot { width: 10px; height: 10px; border-radius: 50%; opacity: .28; }
+.dot.r { background: #ff5f57; color: #ff5f57; } .dot.y { background: #febc2e; color: #febc2e; } .dot.g { background: #28c840; color: #28c840; }
+/* 红绿灯循环：红→黄→绿依次点亮，每灯亮约 1.5s，一个周期 6s */
+.chat-head .dot { animation: traffic-light 6s infinite; }
+.chat-head .dot.r { animation-delay: 0s; }
+.chat-head .dot.y { animation-delay: 2s; }
+.chat-head .dot.g { animation-delay: 4s; }
+@keyframes traffic-light {
+  0%   { opacity: 1; box-shadow: 0 0 8px 2px currentColor; }
+  25%  { opacity: 1; box-shadow: 0 0 8px 2px currentColor; }
+  32%  { opacity: .28; box-shadow: none; }
+  100% { opacity: .28; box-shadow: none; }
+}
 .msg { padding: 12px 16px; border-radius: 14px; margin-bottom: 12px; font-size: .94rem; }
 .msg.user { background: var(--color-primary-soft); color: var(--color-text); margin-left: 32px; }
 .msg.bot { background: var(--color-surface-2); border: 1px solid var(--color-border); margin-right: 24px; }
