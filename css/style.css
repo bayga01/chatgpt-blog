@@ -936,6 +936,8 @@ body.menu-open .mobile-menu { transform: translateX(0); }
   #featuredContent { grid-template-columns: 1fr; }
   .section { padding: 40px 0; }
   .footer-grid { grid-template-columns: 1fr; }
+  /* 手机端隐藏页脚「内容」链接列，减少底部留白；PC/平板正常显示 */
+  .footer-links { display: none; }
   .hero { padding: 48px 0 32px; }
   .stats { margin-bottom: 36px; }
   /* 手机上按钮略小、更贴边，减少对正文的遮挡 */
