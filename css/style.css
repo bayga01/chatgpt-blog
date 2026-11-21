@@ -940,7 +940,7 @@ body.menu-open .mobile-menu { transform: translateX(0); }
   .footer-links { display: none; }
   /* 手机端把品牌与简介并排一行，减少底部高度；PC/平板保持原样上下排列 */
   .footer-about { display: flex; align-items: flex-start; gap: 10px; }
-  .footer-about .brand { margin-bottom: 0 !important; flex-shrink: 0; }
+  .footer-about .brand { display: flex; margin-bottom: 0 !important; flex-shrink: 0; }
   .footer-about p { margin: 0; flex: 1; }
   .hero { padding: 48px 0 32px; }
   .stats { margin-bottom: 36px; }
