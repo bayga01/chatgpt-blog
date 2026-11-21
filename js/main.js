@@ -182,7 +182,8 @@
 
   var pager = document.getElementById("pager");
 
-  var PAGE_SIZE = 12;
+  // 每页文章数：手机端(≤640px) 7 篇，PC/平板保持 12 篇
+  function getPageSize() { return window.innerWidth <= 640 ? 7 : 12; }
   var state = { filter: "all", search: "", page: 1 };
 
   // 所有勾选了「首页精选」的文章（最多取 6 篇）
@@ -231,6 +232,7 @@
 
   function renderGrid() {
     if (!grid) return;
+    var PAGE_SIZE = getPageSize();
     var list = getFiltered();
     var total = list.length;
     var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
