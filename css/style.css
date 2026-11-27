@@ -814,6 +814,48 @@ body.menu-open .hamburger span:nth-child(3) { transform: translateY(-6px) rotate
 }
 .share-btn:hover { border-color: var(--color-primary); color: var(--color-primary); transform: translateY(-1px); }
 
+/* 微信分享按钮 */
+.wechat-share { margin-top: 32px; }
+.wechat-share-btn {
+  background: #07c160; border-color: #07c160; color: #fff;
+}
+.wechat-share-btn:hover { background: #06ad56; border-color: #06ad56; color: #fff; }
+
+/* 目录框底部的紧凑微信分享按钮（仅 PC 端，移动端由 .wechat-share 隐藏） */
+.toc-share {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+.toc-share .wechat-share-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 7px 10px;
+  font-size: .82rem;
+  border-radius: var(--radius-sm);
+}
+.toc-share .wechat-share-btn svg { width: 14px; height: 14px; }
+
+/* 微信分享二维码弹窗 */
+.wechat-modal { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 20px; }
+.wechat-modal[hidden] { display: none; }
+.wechat-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+.wechat-modal-box {
+  position: relative; z-index: 1; width: 100%; max-width: 320px;
+  background: var(--color-surface); border-radius: 16px;
+  padding: 26px 24px 22px; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+.wechat-modal-box h3 { margin: 0 0 18px; font-size: 1.15rem; }
+.wechat-modal-close {
+  position: absolute; top: 8px; right: 12px;
+  border: 0; background: none; cursor: pointer;
+  font-size: 26px; line-height: 1; color: var(--color-text-muted);
+}
+.wechat-modal-qr { display: flex; justify-content: center; margin: 0 auto; }
+.wechat-modal-qr img { width: 200px; height: 200px; display: block; }
+.wechat-modal-tip { margin: 18px 0 0; font-size: .88rem; color: var(--color-text-soft); line-height: 1.7; }
+
 /* ---------- 页脚 ---------- */
 .site-footer {
   background: var(--color-bg-soft);
@@ -899,6 +941,8 @@ body.menu-open .mobile-menu { transform: translateX(0); }
   .grid, .related-grid { grid-template-columns: repeat(2, 1fr); }
   #featuredContent { grid-template-columns: repeat(2, 1fr); }
   .post-layout { grid-template-columns: 1fr; }
+  /* 微信分享按钮仅 PC 端显示，平板/手机隐藏 */
+  .wechat-share { display: none; }
   /* 移动端目录：搬到首图上方，用横向小标签展示，点一下直接跳到对应段落 */
   .toc-mobile {
     position: static;

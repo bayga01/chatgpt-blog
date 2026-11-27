@@ -572,6 +572,45 @@
     if (slug) {
       history.replaceState(null, "", "post.html?slug=" + slug);
     }
+
+    // 微信分享二维码（目录框底部按钮）
+    setupWechatShare(pageUrl);
+  }
+
+  // 微信分享：点击按钮弹出当前文章链接的二维码，供微信扫一扫分享
+  function setupWechatShare(pageUrl) {
+    var btn = document.getElementById("wechatShareBtn");
+    var modal = document.getElementById("wechatModal");
+    var qrBox = document.getElementById("wechatQr");
+    if (!btn || !modal || !qrBox) return;
+
+    function close() { modal.hidden = true; }
+    function open() {
+      // 用本地二维码库生成（qrcode 由 js/vendor/qrcode.min.js 提供）
+      if (typeof window.qrcode === "function" && pageUrl) {
+        try {
+          var qr = window.qrcode(0, "M");
+          qr.addData(pageUrl);
+          qr.make();
+          qrBox.innerHTML = '<img src="' + qr.createDataURL(6, 2) + '" alt="文章二维码">';
+        } catch (e) {
+          qrBox.innerHTML = '<p>二维码生成失败，请复制链接分享</p>';
+        }
+      } else {
+        qrBox.innerHTML = '<p>二维码组件未加载，请刷新后重试</p>';
+      }
+      modal.hidden = false;
+    }
+
+    btn.addEventListener("click", open);
+    // 点遮罩或关闭按钮关闭
+    Array.prototype.forEach.call(modal.querySelectorAll("[data-close]"), function (el) {
+      el.addEventListener("click", close);
+    });
+    // Esc 关闭
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.hidden) close();
+    });
   }
 
   // 移动端目录位置：≤980px 时移到首图上方（电脑端保持原位）

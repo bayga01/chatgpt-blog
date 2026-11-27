@@ -1,5 +1,21 @@
 # 可视化后台发文网站 · 傻瓜式上线指南
 
+## ✅ 当前线上信息（已全部配置完成，实际生效值）
+
+| 项目 | 值 |
+|---|---|
+| 正式网址（前台） | `https://dianlijuhe.com` 和 `https://www.dianlijuhe.com`（两个都能访问） |
+| 后台地址 | `https://dianlijuhe.com/admin` → Login with GitHub |
+| GitHub 仓库 | `bayga01/chatgpt-blog`（公开） |
+| Cloudflare 项目 | `chatgpt-blog`，DNS 已托管在 Cloudflare |
+| 域名注册商 | 阿里云（域名 `dianlijuhe.com`，NS 已改到 Cloudflare） |
+| OAuth 回调地址 | `https://dianlijuhe.com/api/callback` |
+| Cloudflare 密钥 | `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`（类型 Secret） |
+
+> **换域名时要同步改 3 处**：① GitHub OAuth App 的 Homepage + Redirect URI；② `admin/config.yml` 的 `site_url`/`display_url`/`logo_url` 和 `backend.base_url`；③重新部署。否则后台登不上。
+
+---
+
 > 目标：搭建一个**不用懂代码、不用买主机、永久免费**的文章网站。  
 > 以后发文 = 打开一个网页后台 → 填标题、选分类、写正文 → 点发布，网站自动更新。
 >
